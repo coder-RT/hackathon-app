@@ -319,7 +319,7 @@ function renderSnippets(snippets) {
     <div class="card snippet-card" onclick="copySnippet('${s.id}')">
       <h3>${s.name}</h3>
       <div class="tags">${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-      <pre><code>${escapeHtml(s.code.substring(0, 150))}${s.code.length > 150 ? '...' : ''}</code></pre>
+      <pre><code>${escapeHtml(getCodePreview(s.code, 7))}</code></pre>
       <button class="copy-btn">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -531,6 +531,14 @@ function escapeHtml(text) {
   const div = document.createElement('div')
   div.textContent = text
   return div.innerHTML
+}
+
+function getCodePreview(code, lines) {
+  const codeLines = code.split('\n')
+  if (codeLines.length <= lines) {
+    return code
+  }
+  return codeLines.slice(0, lines).join('\n')
 }
 
 function showToast(message) {
