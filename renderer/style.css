@@ -598,13 +598,13 @@ body {
   color: #e2e8f0;
   padding: 14px;
   border-radius: var(--radius);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   overflow-y: auto;
   overflow-x: auto;
   margin: 12px 0;
-  max-height: 147px;
-  line-height: 1.5;
-  flex: 1;
+  height: 168px;
+  line-height: 1.6;
+  flex: none;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
