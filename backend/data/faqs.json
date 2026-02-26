@@ -1,0 +1,77 @@
+{
+  "cors-error": {
+    "keywords": ["cors", "blocked", "access-control", "cross-origin", "preflight"],
+    "problem": "CORS error when calling API from frontend",
+    "solution": "Add CORS middleware to your backend:\n\n**Express.js:**\n```js\nconst cors = require('cors');\napp.use(cors());\n```\n\n**FastAPI:**\n```python\nfrom fastapi.middleware.cors import CORSMiddleware\napp.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*'], allow_headers=['*'])\n```\n\n**Flask:**\n```python\nfrom flask_cors import CORS\nCORS(app)\n```"
+  },
+  "env-not-loaded": {
+    "keywords": ["env", "undefined", "process.env", "environment", "dotenv", "variables"],
+    "problem": "Environment variables not loading or showing as undefined",
+    "solution": "Install and configure dotenv:\n\n**Node.js:**\n```bash\nnpm install dotenv\n```\nAdd at the top of your entry file:\n```js\nrequire('dotenv').config();\n```\n\n**Python:**\n```bash\npip install python-dotenv\n```\n```python\nfrom dotenv import load_dotenv\nload_dotenv()\n```\n\nMake sure your `.env` file is in the project root and NOT committed to git."
+  },
+  "port-in-use": {
+    "keywords": ["port", "eaddrinuse", "address already in use", "listen", "3000"],
+    "problem": "Port already in use error when starting server",
+    "solution": "Find and kill the process using the port:\n\n**macOS/Linux:**\n```bash\nlsof -i :3000\nkill -9 <PID>\n```\n\n**Windows:**\n```bash\nnetstat -ano | findstr :3000\ntaskkill /PID <PID> /F\n```\n\nOr use a different port by setting `PORT` in your environment."
+  },
+  "module-not-found": {
+    "keywords": ["module not found", "cannot find module", "import error", "no module named"],
+    "problem": "Module not found error when importing packages",
+    "solution": "Make sure you've installed the dependency:\n\n**Node.js:**\n```bash\nnpm install <package-name>\n```\n\n**Python:**\n```bash\npip install <package-name>\n```\n\nIf using a virtual environment, make sure it's activated. Check that you're in the correct directory with your package.json or requirements.txt."
+  },
+  "json-parse-error": {
+    "keywords": ["json", "parse", "unexpected token", "syntax error", "invalid json"],
+    "problem": "JSON parsing error in API requests or responses",
+    "solution": "Common causes:\n\n1. **Missing Content-Type header:**\n```js\nfetch(url, {\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(data)\n});\n```\n\n2. **Server not returning JSON:** Check your API endpoint returns valid JSON.\n\n3. **Trailing commas:** Remove trailing commas in JSON files.\n\n4. **Validate JSON:** Use https://jsonlint.com to validate your JSON."
+  },
+  "async-await": {
+    "keywords": ["async", "await", "promise", "then", "undefined", "pending"],
+    "problem": "Async/await not working, getting undefined or Promise pending",
+    "solution": "Make sure to:\n\n1. **Add async to function:**\n```js\nasync function fetchData() {\n  const response = await fetch(url);\n  const data = await response.json();\n  return data;\n}\n```\n\n2. **Await the function call:**\n```js\nconst result = await fetchData();\n```\n\n3. **Handle errors:**\n```js\ntry {\n  const data = await fetchData();\n} catch (error) {\n  console.error('Error:', error);\n}\n```"
+  },
+  "mongodb-connection": {
+    "keywords": ["mongodb", "mongoose", "connection", "refused", "timeout", "atlas"],
+    "problem": "Cannot connect to MongoDB database",
+    "solution": "Troubleshooting steps:\n\n1. **Check MongoDB is running locally:**\n```bash\nmongod --version\n```\n\n2. **For MongoDB Atlas:**\n- Whitelist your IP in Network Access\n- Check username/password in connection string\n- Use the correct connection string format\n\n3. **Connection string format:**\n```\nmongodb+srv://<user>:<password>@cluster.mongodb.net/<dbname>\n```\n\n4. **Add error handling:**\n```js\nmongoose.connect(uri).catch(err => console.error(err));\n```"
+  },
+  "react-state": {
+    "keywords": ["react", "state", "usestate", "not updating", "stale", "closure"],
+    "problem": "React state not updating or showing stale values",
+    "solution": "Common fixes:\n\n1. **Use functional updates:**\n```jsx\nsetCount(prev => prev + 1);\n```\n\n2. **State updates are async:** Don't read state immediately after setting it.\n\n3. **Dependencies in useEffect:**\n```jsx\nuseEffect(() => {\n  // Use the state here\n}, [stateVariable]); // Add to dependency array\n```\n\n4. **Object/array state:** Create new references:\n```jsx\nsetItems([...items, newItem]);\nsetUser({...user, name: 'New'});\n```"
+  },
+  "git-push-rejected": {
+    "keywords": ["git", "push", "rejected", "non-fast-forward", "remote"],
+    "problem": "Git push rejected - remote has changes",
+    "solution": "Pull changes first, then push:\n\n```bash\ngit pull origin main --rebase\ngit push origin main\n```\n\nIf you have conflicts:\n```bash\n# Fix conflicts in the files\ngit add .\ngit rebase --continue\ngit push origin main\n```\n\n**Warning:** Avoid force push (`--force`) on shared branches."
+  },
+  "docker-build-fail": {
+    "keywords": ["docker", "build", "failed", "dockerfile", "image"],
+    "problem": "Docker build failing",
+    "solution": "Common issues:\n\n1. **Missing .dockerignore:** Create one to exclude node_modules:\n```\nnode_modules\n.env\n.git\n```\n\n2. **Copy files before install:**\n```dockerfile\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\n```\n\n3. **Check base image exists:**\n```dockerfile\nFROM node:18-alpine\n```\n\n4. **Build with no cache:**\n```bash\ndocker build --no-cache -t myapp .\n```"
+  },
+  "api-401-403": {
+    "keywords": ["401", "403", "unauthorized", "forbidden", "auth", "token"],
+    "problem": "Getting 401 Unauthorized or 403 Forbidden errors",
+    "solution": "Check your authentication:\n\n1. **Verify token is being sent:**\n```js\nfetch(url, {\n  headers: {\n    'Authorization': `Bearer ${token}`\n  }\n});\n```\n\n2. **Check token is valid:** Decode at https://jwt.io\n\n3. **Token expired?** Generate a new one.\n\n4. **API key issues:** Verify the key is correct and has proper permissions."
+  },
+  "npm-install-fail": {
+    "keywords": ["npm", "install", "error", "eacces", "permission", "peer"],
+    "problem": "npm install failing with errors",
+    "solution": "Try these fixes:\n\n1. **Clear npm cache:**\n```bash\nnpm cache clean --force\n```\n\n2. **Delete node_modules and reinstall:**\n```bash\nrm -rf node_modules package-lock.json\nnpm install\n```\n\n3. **Permission error (EACCES):**\n```bash\nsudo chown -R $(whoami) ~/.npm\n```\n\n4. **Peer dependency issues:**\n```bash\nnpm install --legacy-peer-deps\n```"
+  },
+  "python-venv": {
+    "keywords": ["python", "venv", "virtual", "environment", "activate", "pip"],
+    "problem": "Python virtual environment issues",
+    "solution": "Create and activate a virtual environment:\n\n**Create:**\n```bash\npython -m venv venv\n```\n\n**Activate:**\n```bash\n# macOS/Linux\nsource venv/bin/activate\n\n# Windows\nvenv\\Scripts\\activate\n```\n\n**Install dependencies:**\n```bash\npip install -r requirements.txt\n```\n\n**Deactivate:**\n```bash\ndeactivate\n```"
+  },
+  "react-hooks-rules": {
+    "keywords": ["hooks", "rules", "conditionally", "loop", "invalid hook call"],
+    "problem": "React hooks error - invalid hook call or conditional usage",
+    "solution": "Follow the Rules of Hooks:\n\n1. **Only call hooks at the top level** - not inside loops, conditions, or nested functions.\n\n2. **Only call hooks from React functions** - components or custom hooks.\n\n**Wrong:**\n```jsx\nif (condition) {\n  const [state, setState] = useState(0); // ❌\n}\n```\n\n**Correct:**\n```jsx\nconst [state, setState] = useState(0);\nif (condition) {\n  // use state here ✓\n}\n```"
+  },
+  "websocket-connection": {
+    "keywords": ["websocket", "ws", "connection", "closed", "refused"],
+    "problem": "WebSocket connection failing or closing unexpectedly",
+    "solution": "Troubleshooting steps:\n\n1. **Check server is running** on the correct port.\n\n2. **Use correct protocol:**\n```js\nconst ws = new WebSocket('ws://localhost:8080');\n// Use wss:// for HTTPS\n```\n\n3. **Handle reconnection:**\n```js\nws.onclose = () => {\n  setTimeout(() => connectWebSocket(), 3000);\n};\n```\n\n4. **CORS:** WebSockets don't have CORS, but check firewall/proxy settings."
+  }
+}

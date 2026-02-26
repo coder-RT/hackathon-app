@@ -1,0 +1,80 @@
+{
+  "hackathon": {
+    "name": "AI for Good Hackathon",
+    "theme": "AI for Good",
+    "duration": "48 Hours"
+  },
+  "rules": [
+    "Maximum team size: 4 members",
+    "All code must be written during the hackathon",
+    "Submit via GitHub repository",
+    "Include a README with setup instructions",
+    "Demo video required (max 3 minutes)",
+    "Use of AI tools (Copilot, ChatGPT) is allowed",
+    "Open source libraries are permitted",
+    "Projects must address a real-world problem"
+  ],
+  "timeline": [
+    { "time": "Friday 6:00 PM", "event": "Kickoff & Team Formation" },
+    { "time": "Friday 7:00 PM", "event": "Problem Statements Released" },
+    { "time": "Friday 8:00 PM", "event": "Hacking Begins" },
+    { "time": "Saturday 12:00 PM", "event": "Mentor Check-in Round 1" },
+    { "time": "Saturday 6:00 PM", "event": "Progress Checkpoint" },
+    { "time": "Sunday 12:00 PM", "event": "Mentor Check-in Round 2" },
+    { "time": "Sunday 4:00 PM", "event": "Code Freeze" },
+    { "time": "Sunday 5:00 PM", "event": "Demo Submissions Due" },
+    { "time": "Sunday 6:00 PM", "event": "Final Presentations" },
+    { "time": "Sunday 8:00 PM", "event": "Winners Announced" }
+  ],
+  "apis": {
+    "weather": {
+      "name": "OpenWeatherMap",
+      "url": "https://api.openweathermap.org/data/2.5/weather",
+      "docs": "https://openweathermap.org/api",
+      "description": "Get current weather data for any location"
+    },
+    "maps": {
+      "name": "Google Maps",
+      "url": "https://maps.googleapis.com/maps/api",
+      "docs": "https://developers.google.com/maps/documentation",
+      "description": "Maps, geocoding, and places data"
+    },
+    "news": {
+      "name": "NewsAPI",
+      "url": "https://newsapi.org/v2",
+      "docs": "https://newsapi.org/docs",
+      "description": "Access news articles from various sources"
+    },
+    "ai": {
+      "name": "OpenAI",
+      "url": "https://api.openai.com/v1",
+      "docs": "https://platform.openai.com/docs",
+      "description": "GPT models, embeddings, and more"
+    },
+    "database": {
+      "name": "Supabase",
+      "url": "https://supabase.com",
+      "docs": "https://supabase.com/docs",
+      "description": "Postgres database with REST API and auth"
+    }
+  },
+  "judging_criteria": [
+    { "criteria": "Innovation", "weight": "25%", "description": "Originality and creativity of the solution" },
+    { "criteria": "Technical Implementation", "weight": "25%", "description": "Code quality, architecture, and technical complexity" },
+    { "criteria": "Impact", "weight": "20%", "description": "Potential real-world impact and scalability" },
+    { "criteria": "User Experience", "weight": "15%", "description": "Design, usability, and accessibility" },
+    { "criteria": "Presentation", "weight": "15%", "description": "Demo clarity and team communication" }
+  ],
+  "prizes": [
+    { "place": "1st Place", "prize": "$5,000 + Cloud Credits" },
+    { "place": "2nd Place", "prize": "$3,000 + Mentorship" },
+    { "place": "3rd Place", "prize": "$1,500" },
+    { "place": "Best AI Integration", "prize": "$1,000" },
+    { "place": "Best UI/UX", "prize": "$500" }
+  ],
+  "contacts": {
+    "organizers": "hackathon@company.com",
+    "technical_support": "tech-support@company.com",
+    "slack_channel": "#hackathon-help"
+  }
+}

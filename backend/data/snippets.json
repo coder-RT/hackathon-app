@@ -1,0 +1,77 @@
+{
+  "fastapi-basic": {
+    "name": "FastAPI Basic Setup",
+    "tags": ["python", "fastapi", "backend", "api"],
+    "code": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI()\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello World\"}\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}"
+  },
+  "fastapi-crud": {
+    "name": "FastAPI CRUD Operations",
+    "tags": ["python", "fastapi", "crud", "backend"],
+    "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import List, Optional\n\napp = FastAPI()\n\nclass Item(BaseModel):\n    id: Optional[int] = None\n    name: str\n    description: str\n\nitems_db = []\n\n@app.post(\"/items\", response_model=Item)\ndef create_item(item: Item):\n    item.id = len(items_db) + 1\n    items_db.append(item)\n    return item\n\n@app.get(\"/items\", response_model=List[Item])\ndef read_items():\n    return items_db\n\n@app.get(\"/items/{item_id}\", response_model=Item)\ndef read_item(item_id: int):\n    for item in items_db:\n        if item.id == item_id:\n            return item\n    raise HTTPException(status_code=404, detail=\"Item not found\")\n\n@app.put(\"/items/{item_id}\", response_model=Item)\ndef update_item(item_id: int, updated: Item):\n    for i, item in enumerate(items_db):\n        if item.id == item_id:\n            updated.id = item_id\n            items_db[i] = updated\n            return updated\n    raise HTTPException(status_code=404, detail=\"Item not found\")\n\n@app.delete(\"/items/{item_id}\")\ndef delete_item(item_id: int):\n    for i, item in enumerate(items_db):\n        if item.id == item_id:\n            items_db.pop(i)\n            return {\"message\": \"Item deleted\"}\n    raise HTTPException(status_code=404, detail=\"Item not found\")"
+  },
+  "react-component": {
+    "name": "React Functional Component",
+    "tags": ["react", "javascript", "frontend", "component"],
+    "code": "import React, { useState } from 'react';\n\nexport const MyComponent = ({ title, onAction }) => {\n  const [count, setCount] = useState(0);\n\n  const handleClick = () => {\n    setCount(prev => prev + 1);\n    onAction && onAction(count + 1);\n  };\n\n  return (\n    <div className=\"component\">\n      <h2>{title}</h2>\n      <p>Count: {count}</p>\n      <button onClick={handleClick}>Increment</button>\n    </div>\n  );\n};"
+  },
+  "react-fetch": {
+    "name": "React Data Fetching with useEffect",
+    "tags": ["react", "fetch", "api", "hooks"],
+    "code": "import React, { useState, useEffect } from 'react';\n\nexport const DataFetcher = ({ endpoint }) => {\n  const [data, setData] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchData = async () => {\n      try {\n        setLoading(true);\n        const response = await fetch(endpoint);\n        if (!response.ok) throw new Error('Network response was not ok');\n        const result = await response.json();\n        setData(result);\n      } catch (err) {\n        setError(err.message);\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    fetchData();\n  }, [endpoint]);\n\n  if (loading) return <div>Loading...</div>;\n  if (error) return <div>Error: {error}</div>;\n  return <pre>{JSON.stringify(data, null, 2)}</pre>;\n};"
+  },
+  "express-basic": {
+    "name": "Express.js Basic Server",
+    "tags": ["express", "nodejs", "backend", "javascript"],
+    "code": "const express = require('express');\nconst cors = require('cors');\n\nconst app = express();\napp.use(cors());\napp.use(express.json());\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'ok' });\n});\n\nconst PORT = process.env.PORT || 3000;\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});"
+  },
+  "express-crud": {
+    "name": "Express.js CRUD API",
+    "tags": ["express", "crud", "nodejs", "api"],
+    "code": "const express = require('express');\nconst cors = require('cors');\n\nconst app = express();\napp.use(cors());\napp.use(express.json());\n\nlet items = [];\nlet nextId = 1;\n\napp.post('/items', (req, res) => {\n  const item = { id: nextId++, ...req.body };\n  items.push(item);\n  res.status(201).json(item);\n});\n\napp.get('/items', (req, res) => {\n  res.json(items);\n});\n\napp.get('/items/:id', (req, res) => {\n  const item = items.find(i => i.id === parseInt(req.params.id));\n  if (!item) return res.status(404).json({ error: 'Not found' });\n  res.json(item);\n});\n\napp.put('/items/:id', (req, res) => {\n  const index = items.findIndex(i => i.id === parseInt(req.params.id));\n  if (index === -1) return res.status(404).json({ error: 'Not found' });\n  items[index] = { id: parseInt(req.params.id), ...req.body };\n  res.json(items[index]);\n});\n\napp.delete('/items/:id', (req, res) => {\n  const index = items.findIndex(i => i.id === parseInt(req.params.id));\n  if (index === -1) return res.status(404).json({ error: 'Not found' });\n  items.splice(index, 1);\n  res.json({ message: 'Deleted' });\n});\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+  },
+  "jwt-auth": {
+    "name": "JWT Authentication Middleware",
+    "tags": ["jwt", "auth", "authentication", "middleware"],
+    "code": "const jwt = require('jsonwebtoken');\n\nconst SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';\n\nfunction generateToken(payload) {\n  return jwt.sign(payload, SECRET_KEY, { expiresIn: '24h' });\n}\n\nfunction verifyToken(req, res, next) {\n  const authHeader = req.headers.authorization;\n  if (!authHeader) {\n    return res.status(401).json({ error: 'No token provided' });\n  }\n\n  const token = authHeader.split(' ')[1];\n  try {\n    const decoded = jwt.verify(token, SECRET_KEY);\n    req.user = decoded;\n    next();\n  } catch (err) {\n    return res.status(401).json({ error: 'Invalid token' });\n  }\n}\n\nmodule.exports = { generateToken, verifyToken };"
+  },
+  "mongodb-connect": {
+    "name": "MongoDB Connection Setup",
+    "tags": ["mongodb", "database", "nodejs", "mongoose"],
+    "code": "const mongoose = require('mongoose');\n\nconst MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp';\n\nasync function connectDB() {\n  try {\n    await mongoose.connect(MONGODB_URI);\n    console.log('Connected to MongoDB');\n  } catch (err) {\n    console.error('MongoDB connection error:', err);\n    process.exit(1);\n  }\n}\n\nmongoose.connection.on('disconnected', () => {\n  console.log('MongoDB disconnected');\n});\n\nprocess.on('SIGINT', async () => {\n  await mongoose.connection.close();\n  process.exit(0);\n});\n\nmodule.exports = connectDB;"
+  },
+  "python-env": {
+    "name": "Python Environment Setup",
+    "tags": ["python", "env", "dotenv", "environment"],
+    "code": "import os\nfrom dotenv import load_dotenv\n\nload_dotenv()\n\nclass Config:\n    DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'\n    DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///app.db')\n    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')\n    API_KEY = os.getenv('API_KEY')\n\n    @classmethod\n    def validate(cls):\n        required = ['API_KEY']\n        missing = [var for var in required if not getattr(cls, var)]\n        if missing:\n            raise ValueError(f\"Missing required env vars: {missing}\")\n\nconfig = Config()"
+  },
+  "dockerfile": {
+    "name": "Dockerfile for Node.js",
+    "tags": ["docker", "dockerfile", "nodejs", "container"],
+    "code": "FROM node:18-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\n\nRUN npm ci --only=production\n\nCOPY . .\n\nEXPOSE 3000\n\nENV NODE_ENV=production\n\nCMD [\"node\", \"server.js\"]"
+  },
+  "docker-compose": {
+    "name": "Docker Compose Setup",
+    "tags": ["docker", "compose", "container", "deployment"],
+    "code": "version: '3.8'\n\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - NODE_ENV=production\n      - DATABASE_URL=mongodb://db:27017/myapp\n    depends_on:\n      - db\n\n  db:\n    image: mongo:6\n    volumes:\n      - mongo_data:/data/db\n    ports:\n      - \"27017:27017\"\n\nvolumes:\n  mongo_data:"
+  },
+  "websocket-server": {
+    "name": "WebSocket Server Setup",
+    "tags": ["websocket", "socket", "realtime", "nodejs"],
+    "code": "const { WebSocketServer } = require('ws');\n\nconst wss = new WebSocketServer({ port: 8080 });\n\nconst clients = new Set();\n\nwss.on('connection', (ws) => {\n  clients.add(ws);\n  console.log('Client connected');\n\n  ws.on('message', (message) => {\n    const data = JSON.parse(message);\n    console.log('Received:', data);\n\n    clients.forEach(client => {\n      if (client.readyState === ws.OPEN) {\n        client.send(JSON.stringify(data));\n      }\n    });\n  });\n\n  ws.on('close', () => {\n    clients.delete(ws);\n    console.log('Client disconnected');\n  });\n});\n\nconsole.log('WebSocket server running on ws://localhost:8080');"
+  },
+  "python-flask": {
+    "name": "Flask Basic Setup",
+    "tags": ["python", "flask", "backend", "api"],
+    "code": "from flask import Flask, jsonify, request\nfrom flask_cors import CORS\n\napp = Flask(__name__)\nCORS(app)\n\n@app.route('/')\ndef home():\n    return jsonify({'message': 'Hello World'})\n\n@app.route('/api/data', methods=['GET', 'POST'])\ndef handle_data():\n    if request.method == 'POST':\n        data = request.json\n        return jsonify({'received': data}), 201\n    return jsonify({'items': []})\n\nif __name__ == '__main__':\n    app.run(debug=True, port=5000)"
+  },
+  "tailwind-card": {
+    "name": "Tailwind CSS Card Component",
+    "tags": ["tailwind", "css", "ui", "card"],
+    "code": "<div class=\"max-w-sm rounded-lg overflow-hidden shadow-lg bg-white\">\n  <img class=\"w-full h-48 object-cover\" src=\"/image.jpg\" alt=\"Card image\">\n  <div class=\"px-6 py-4\">\n    <h2 class=\"font-bold text-xl mb-2 text-gray-800\">Card Title</h2>\n    <p class=\"text-gray-600 text-base\">Card description goes here.</p>\n  </div>\n  <div class=\"px-6 pt-4 pb-6\">\n    <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\">\n      Learn More\n    </button>\n  </div>\n</div>"
+  },
+  "github-actions": {
+    "name": "GitHub Actions CI/CD",
+    "tags": ["github", "actions", "ci", "cd", "deployment"],
+    "code": "name: CI/CD Pipeline\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Setup Node.js\n        uses: actions/setup-node@v4\n        with:\n          node-version: '18'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n      - name: Run tests\n        run: npm test\n\n      - name: Build\n        run: npm run build"
+  }
+}

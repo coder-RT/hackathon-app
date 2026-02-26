@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hackathon App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>🚀 Hackathon</h2>
+    <p><b>Theme:</b> AI for Good</p>
+    <p><b>Time:</b> 48 Hours</p>
+
+    <hr>
+
+    <button class="nav-btn active" onclick="showSection('chat')">💬 Chat</button>
+    <button class="nav-btn" onclick="showSection('snippets')">📝 Snippets</button>
+    <button class="nav-btn" onclick="showSection('resources')">📋 Resources</button>
+    <button class="nav-btn" onclick="showSection('faq')">❓ FAQ</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- Chat Section -->
+    <div id="chat-section" class="section">
+      <div id="chat-box"></div>
+
+      <div class="input-box">
+        <input id="input" placeholder="Ask the agent..." onkeypress="handleKeyPress(event)" />
+        <button onclick="send()">Send</button>
+      </div>
+    </div>
+
+    <!-- Snippets Section -->
+    <div id="snippets-section" class="section" style="display:none;">
+      <div class="section-header">
+        <h2>📝 Code Snippets</h2>
+        <p>Pre-defined code templates to save time. Click to copy!</p>
+      </div>
+      <div class="filter-bar">
+        <input id="snippet-search" placeholder="Search snippets..." oninput="filterSnippets()" />
+      </div>
+      <div id="snippets-list" class="card-grid"></div>
+    </div>
+
+    <!-- Resources Section -->
+    <div id="resources-section" class="section" style="display:none;">
+      <div class="section-header">
+        <h2>📋 Hackathon Resources</h2>
+        <p>Rules, timeline, APIs, and everything you need.</p>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showResourceTab('rules')">Rules</button>
+        <button class="tab-btn" onclick="showResourceTab('timeline')">Timeline</button>
+        <button class="tab-btn" onclick="showResourceTab('apis')">APIs</button>
+        <button class="tab-btn" onclick="showResourceTab('judging')">Judging</button>
+        <button class="tab-btn" onclick="showResourceTab('prizes')">Prizes</button>
+      </div>
+      <div id="resources-content" class="resource-content"></div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div id="faq-section" class="section" style="display:none;">
+      <div class="section-header">
+        <h2>❓ FAQ & Troubleshooting</h2>
+        <p>Common issues and their solutions.</p>
+      </div>
+      <div class="filter-bar">
+        <input id="faq-search" placeholder="Search by error or keyword..." oninput="filterFaqs()" />
+      </div>
+      <div id="faq-list" class="faq-container"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
