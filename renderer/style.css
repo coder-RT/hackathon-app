@@ -35,27 +35,42 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg-secondary);
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 .container {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  background: linear-gradient(145deg, rgba(99, 102, 241, 0.03) 0%, transparent 50%, rgba(16, 185, 129, 0.02) 100%);
 }
 
 /* Sidebar */
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, var(--secondary) 0%, var(--secondary-light) 100%);
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 40%, #0f172a 100%);
   color: white;
   padding: 24px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  border-right: 1px solid rgba(99, 102, 241, 0.1);
+  position: relative;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.08) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .sidebar-header {
@@ -169,9 +184,27 @@ a,
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   overflow: hidden;
-  border-left: 1px solid var(--border-light);
+  position: relative;
+}
+
+.main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at top right, rgba(99, 102, 241, 0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at bottom left, rgba(16, 185, 129, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Sections */
@@ -184,9 +217,10 @@ a,
 
 .section-header {
   padding: 28px 32px 20px;
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 100%);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
+  backdrop-filter: blur(8px);
 }
 
 .section-header h2 {
@@ -206,7 +240,7 @@ a,
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-secondary);
+  background: transparent;
 }
 
 #chat-box {
@@ -293,9 +327,10 @@ a,
 .input-box {
   display: flex;
   padding: 20px 32px;
-  background: var(--bg-primary);
+  background: linear-gradient(180deg, rgba(248,250,252,0.95) 0%, rgba(255,255,255,0.98) 100%);
   gap: 12px;
   border-top: 1px solid var(--border);
+  backdrop-filter: blur(8px);
 }
 
 .input-box input {
