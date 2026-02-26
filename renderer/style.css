@@ -562,9 +562,9 @@ body {
 /* Card Grid */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 20px;
-  padding: 20px 32px 32px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 28px;
+  padding: 24px 32px 48px;
   overflow-y: auto;
 }
 
@@ -577,6 +577,7 @@ body {
   transition: var(--transition);
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .card:hover {
@@ -586,23 +587,23 @@ body {
 }
 
 .card h3 {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 10px;
+  margin-bottom: 14px;
   line-height: 1.4;
 }
 
 .card pre {
   background: var(--secondary);
   color: #e2e8f0;
-  padding: 14px;
+  padding: 16px;
   border-radius: var(--radius);
   font-size: 0.8rem;
   overflow-y: auto;
   overflow-x: auto;
-  margin: 12px 0;
-  height: 168px;
+  margin: 14px 0 18px;
+  height: 175px;
   line-height: 1.6;
   flex: none;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
@@ -610,26 +611,31 @@ body {
 
 .copy-btn {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 18px;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 600;
   transition: var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: auto;
+  gap: 10px;
+  margin-top: 0;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
 }
 
 .copy-btn:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
   background: linear-gradient(135deg, var(--primary-dark) 0%, #4338ca 100%);
+}
+
+.copy-btn:active {
+  transform: translateY(0);
 }
 
 .copy-btn svg {
@@ -645,12 +651,20 @@ body {
 }
 
 .tag {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: var(--radius-xl);
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+}
+
+.tag:hover {
   background: var(--primary-bg);
   color: var(--primary-dark);
-  padding: 5px 12px;
-  border-radius: var(--radius-xl);
-  font-size: 0.75rem;
-  font-weight: 600;
+  border-color: var(--primary-light);
 }
 
 /* Tabs */
@@ -1352,11 +1366,18 @@ input:focus-visible {
 
 /* Snippet Card Specific */
 .snippet-card {
-  min-height: 300px;
+  min-height: 360px;
 }
 
 .snippet-card .tags {
-  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.snippet-card pre {
+  margin-top: auto;
 }
 
 .snippet-card pre::-webkit-scrollbar {
@@ -1376,6 +1397,10 @@ input:focus-visible {
 
 .snippet-card pre::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
+}
+
+.snippet-card .copy-btn {
+  margin-top: auto;
 }
 
 /* Badge Variations */
