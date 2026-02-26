@@ -17,27 +17,41 @@ const configPromise = initConfig()
 
 contextBridge.exposeInMainWorld('api', {
   getConfig: () => configPromise,
-
   getApiUrl: () => apiUrl,
 
-  sendMessage: async (message) => {
+  sendMessage: async (message, mode = 'auto') => {
     await configPromise
     try {
       const res = await fetch(`${apiUrl}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message, mode })
       })
       const data = await res.json()
-      return data.reply
+      return {
+        reply: data.reply,
+        mode: data.mode || mode,
+        source: data.source || 'unknown',
+        snippetId: data.snippetId
+      }
     } catch (err) {
-      return '🤖 (Offline) Unable to connect to the server. Please check your connection.'
+      return {
+        reply: '🤖 (Offline) Unable to connect to the server. Please check your connection.',
+        mode: 'error',
+        source: 'error'
+      }
     }
   },
 
   fetchSnippets: async () => {
     await configPromise
     const res = await fetch(`${apiUrl}/snippets`)
+    return res.json()
+  },
+
+  fetchSnippet: async (id) => {
+    await configPromise
+    const res = await fetch(`${apiUrl}/snippet/${id}`)
     return res.json()
   },
 
@@ -50,6 +64,12 @@ contextBridge.exposeInMainWorld('api', {
   fetchFaqs: async () => {
     await configPromise
     const res = await fetch(`${apiUrl}/faqs`)
+    return res.json()
+  },
+
+  fetchQuickActions: async () => {
+    await configPromise
+    const res = await fetch(`${apiUrl}/quick-actions`)
     return res.json()
   },
 

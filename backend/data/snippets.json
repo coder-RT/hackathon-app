@@ -1,7 +1,7 @@
 {
   "fastapi-basic": {
     "name": "FastAPI Basic Setup",
-    "tags": ["python", "fastapi", "backend", "api"],
+    "tags": ["python", "fastapi", "backend", "api", "starter"],
     "code": "from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI()\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n@app.get(\"/\")\ndef root():\n    return {\"message\": \"Hello World\"}\n\n@app.get(\"/health\")\ndef health():\n    return {\"status\": \"ok\"}"
   },
   "fastapi-crud": {
@@ -9,9 +9,24 @@
     "tags": ["python", "fastapi", "crud", "backend"],
     "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import List, Optional\n\napp = FastAPI()\n\nclass Item(BaseModel):\n    id: Optional[int] = None\n    name: str\n    description: str\n\nitems_db = []\n\n@app.post(\"/items\", response_model=Item)\ndef create_item(item: Item):\n    item.id = len(items_db) + 1\n    items_db.append(item)\n    return item\n\n@app.get(\"/items\", response_model=List[Item])\ndef read_items():\n    return items_db\n\n@app.get(\"/items/{item_id}\", response_model=Item)\ndef read_item(item_id: int):\n    for item in items_db:\n        if item.id == item_id:\n            return item\n    raise HTTPException(status_code=404, detail=\"Item not found\")\n\n@app.put(\"/items/{item_id}\", response_model=Item)\ndef update_item(item_id: int, updated: Item):\n    for i, item in enumerate(items_db):\n        if item.id == item_id:\n            updated.id = item_id\n            items_db[i] = updated\n            return updated\n    raise HTTPException(status_code=404, detail=\"Item not found\")\n\n@app.delete(\"/items/{item_id}\")\ndef delete_item(item_id: int):\n    for i, item in enumerate(items_db):\n        if item.id == item_id:\n            items_db.pop(i)\n            return {\"message\": \"Item deleted\"}\n    raise HTTPException(status_code=404, detail=\"Item not found\")"
   },
+  "fastapi-file-upload": {
+    "name": "FastAPI File Upload",
+    "tags": ["python", "fastapi", "file", "upload", "multipart"],
+    "code": "from fastapi import FastAPI, File, UploadFile, HTTPException\nfrom fastapi.responses import FileResponse\nimport shutil\nimport os\n\napp = FastAPI()\n\nUPLOAD_DIR = \"uploads\"\nos.makedirs(UPLOAD_DIR, exist_ok=True)\n\n@app.post(\"/upload\")\nasync def upload_file(file: UploadFile = File(...)):\n    file_path = os.path.join(UPLOAD_DIR, file.filename)\n    with open(file_path, \"wb\") as buffer:\n        shutil.copyfileobj(file.file, buffer)\n    return {\"filename\": file.filename, \"size\": os.path.getsize(file_path)}\n\n@app.post(\"/upload-multiple\")\nasync def upload_multiple(files: list[UploadFile] = File(...)):\n    uploaded = []\n    for file in files:\n        file_path = os.path.join(UPLOAD_DIR, file.filename)\n        with open(file_path, \"wb\") as buffer:\n            shutil.copyfileobj(file.file, buffer)\n        uploaded.append(file.filename)\n    return {\"uploaded\": uploaded}\n\n@app.get(\"/download/{filename}\")\nasync def download_file(filename: str):\n    file_path = os.path.join(UPLOAD_DIR, filename)\n    if not os.path.exists(file_path):\n        raise HTTPException(status_code=404, detail=\"File not found\")\n    return FileResponse(file_path, filename=filename)"
+  },
+  "python-file-upload": {
+    "name": "Python File Upload (Flask)",
+    "tags": ["python", "flask", "file", "upload"],
+    "code": "from flask import Flask, request, jsonify, send_from_directory\nimport os\n\napp = Flask(__name__)\n\nUPLOAD_FOLDER = 'uploads'\nALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}\nos.makedirs(UPLOAD_FOLDER, exist_ok=True)\n\ndef allowed_file(filename):\n    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS\n\n@app.route('/upload', methods=['POST'])\ndef upload_file():\n    if 'file' not in request.files:\n        return jsonify({'error': 'No file part'}), 400\n    file = request.files['file']\n    if file.filename == '':\n        return jsonify({'error': 'No selected file'}), 400\n    if file and allowed_file(file.filename):\n        filepath = os.path.join(UPLOAD_FOLDER, file.filename)\n        file.save(filepath)\n        return jsonify({'message': 'File uploaded', 'filename': file.filename})\n    return jsonify({'error': 'File type not allowed'}), 400\n\n@app.route('/download/<filename>')\ndef download_file(filename):\n    return send_from_directory(UPLOAD_FOLDER, filename)\n\nif __name__ == '__main__':\n    app.run(debug=True)"
+  },
+  "express-file-upload": {
+    "name": "Express.js File Upload (Multer)",
+    "tags": ["express", "nodejs", "file", "upload", "multer"],
+    "code": "const express = require('express');\nconst multer = require('multer');\nconst path = require('path');\n\nconst app = express();\n\nconst storage = multer.diskStorage({\n  destination: (req, file, cb) => cb(null, 'uploads/'),\n  filename: (req, file, cb) => {\n    const uniqueName = Date.now() + '-' + file.originalname;\n    cb(null, uniqueName);\n  }\n});\n\nconst upload = multer({\n  storage,\n  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit\n  fileFilter: (req, file, cb) => {\n    const allowed = /jpeg|jpg|png|gif|pdf/;\n    const ext = allowed.test(path.extname(file.originalname).toLowerCase());\n    const mime = allowed.test(file.mimetype);\n    if (ext && mime) return cb(null, true);\n    cb(new Error('Invalid file type'));\n  }\n});\n\napp.post('/upload', upload.single('file'), (req, res) => {\n  res.json({ filename: req.file.filename, size: req.file.size });\n});\n\napp.post('/upload-multiple', upload.array('files', 10), (req, res) => {\n  res.json({ files: req.files.map(f => f.filename) });\n});\n\napp.use('/uploads', express.static('uploads'));\n\napp.listen(3000, () => console.log('Server running on port 3000'));"
+  },
   "react-component": {
     "name": "React Functional Component",
-    "tags": ["react", "javascript", "frontend", "component"],
+    "tags": ["react", "javascript", "frontend", "component", "starter"],
     "code": "import React, { useState } from 'react';\n\nexport const MyComponent = ({ title, onAction }) => {\n  const [count, setCount] = useState(0);\n\n  const handleClick = () => {\n    setCount(prev => prev + 1);\n    onAction && onAction(count + 1);\n  };\n\n  return (\n    <div className=\"component\">\n      <h2>{title}</h2>\n      <p>Count: {count}</p>\n      <button onClick={handleClick}>Increment</button>\n    </div>\n  );\n};"
   },
   "react-fetch": {
@@ -19,9 +34,14 @@
     "tags": ["react", "fetch", "api", "hooks"],
     "code": "import React, { useState, useEffect } from 'react';\n\nexport const DataFetcher = ({ endpoint }) => {\n  const [data, setData] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchData = async () => {\n      try {\n        setLoading(true);\n        const response = await fetch(endpoint);\n        if (!response.ok) throw new Error('Network response was not ok');\n        const result = await response.json();\n        setData(result);\n      } catch (err) {\n        setError(err.message);\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    fetchData();\n  }, [endpoint]);\n\n  if (loading) return <div>Loading...</div>;\n  if (error) return <div>Error: {error}</div>;\n  return <pre>{JSON.stringify(data, null, 2)}</pre>;\n};"
   },
+  "react-file-upload": {
+    "name": "React File Upload Component",
+    "tags": ["react", "file", "upload", "frontend"],
+    "code": "import React, { useState } from 'react';\n\nexport const FileUpload = ({ endpoint, onUpload }) => {\n  const [file, setFile] = useState(null);\n  const [uploading, setUploading] = useState(false);\n  const [progress, setProgress] = useState(0);\n\n  const handleSubmit = async (e) => {\n    e.preventDefault();\n    if (!file) return;\n\n    const formData = new FormData();\n    formData.append('file', file);\n\n    setUploading(true);\n    try {\n      const res = await fetch(endpoint, {\n        method: 'POST',\n        body: formData\n      });\n      const data = await res.json();\n      onUpload && onUpload(data);\n    } catch (err) {\n      console.error('Upload failed:', err);\n    } finally {\n      setUploading(false);\n      setFile(null);\n    }\n  };\n\n  return (\n    <form onSubmit={handleSubmit}>\n      <input\n        type=\"file\"\n        onChange={(e) => setFile(e.target.files[0])}\n        disabled={uploading}\n      />\n      <button type=\"submit\" disabled={!file || uploading}>\n        {uploading ? 'Uploading...' : 'Upload'}\n      </button>\n    </form>\n  );\n};"
+  },
   "express-basic": {
     "name": "Express.js Basic Server",
-    "tags": ["express", "nodejs", "backend", "javascript"],
+    "tags": ["express", "nodejs", "backend", "javascript", "starter"],
     "code": "const express = require('express');\nconst cors = require('cors');\n\nconst app = express();\napp.use(cors());\napp.use(express.json());\n\napp.get('/', (req, res) => {\n  res.json({ message: 'Hello World' });\n});\n\napp.get('/health', (req, res) => {\n  res.json({ status: 'ok' });\n});\n\nconst PORT = process.env.PORT || 3000;\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});"
   },
   "express-crud": {
@@ -31,23 +51,43 @@
   },
   "jwt-auth": {
     "name": "JWT Authentication Middleware",
-    "tags": ["jwt", "auth", "authentication", "middleware"],
+    "tags": ["jwt", "auth", "authentication", "middleware", "security"],
     "code": "const jwt = require('jsonwebtoken');\n\nconst SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key';\n\nfunction generateToken(payload) {\n  return jwt.sign(payload, SECRET_KEY, { expiresIn: '24h' });\n}\n\nfunction verifyToken(req, res, next) {\n  const authHeader = req.headers.authorization;\n  if (!authHeader) {\n    return res.status(401).json({ error: 'No token provided' });\n  }\n\n  const token = authHeader.split(' ')[1];\n  try {\n    const decoded = jwt.verify(token, SECRET_KEY);\n    req.user = decoded;\n    next();\n  } catch (err) {\n    return res.status(401).json({ error: 'Invalid token' });\n  }\n}\n\nmodule.exports = { generateToken, verifyToken };"
   },
   "mongodb-connect": {
     "name": "MongoDB Connection Setup",
-    "tags": ["mongodb", "database", "nodejs", "mongoose"],
+    "tags": ["mongodb", "database", "nodejs", "mongoose", "db"],
     "code": "const mongoose = require('mongoose');\n\nconst MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp';\n\nasync function connectDB() {\n  try {\n    await mongoose.connect(MONGODB_URI);\n    console.log('Connected to MongoDB');\n  } catch (err) {\n    console.error('MongoDB connection error:', err);\n    process.exit(1);\n  }\n}\n\nmongoose.connection.on('disconnected', () => {\n  console.log('MongoDB disconnected');\n});\n\nprocess.on('SIGINT', async () => {\n  await mongoose.connection.close();\n  process.exit(0);\n});\n\nmodule.exports = connectDB;"
+  },
+  "mongodb-schema": {
+    "name": "MongoDB Schema with Mongoose",
+    "tags": ["mongodb", "mongoose", "schema", "model", "database"],
+    "code": "const mongoose = require('mongoose');\n\nconst userSchema = new mongoose.Schema({\n  name: { type: String, required: true },\n  email: { type: String, required: true, unique: true },\n  password: { type: String, required: true },\n  role: { type: String, enum: ['user', 'admin'], default: 'user' },\n  createdAt: { type: Date, default: Date.now },\n  updatedAt: { type: Date, default: Date.now }\n});\n\nuserSchema.pre('save', function(next) {\n  this.updatedAt = Date.now();\n  next();\n});\n\nuserSchema.methods.toJSON = function() {\n  const obj = this.toObject();\n  delete obj.password;\n  return obj;\n};\n\nconst User = mongoose.model('User', userSchema);\n\nmodule.exports = User;"
+  },
+  "sqlite-python": {
+    "name": "SQLite Database (Python)",
+    "tags": ["python", "sqlite", "database", "sql", "db"],
+    "code": "import sqlite3\nfrom contextlib import contextmanager\n\nDATABASE = 'app.db'\n\n@contextmanager\ndef get_db():\n    conn = sqlite3.connect(DATABASE)\n    conn.row_factory = sqlite3.Row\n    try:\n        yield conn\n        conn.commit()\n    finally:\n        conn.close()\n\ndef init_db():\n    with get_db() as db:\n        db.execute('''\n            CREATE TABLE IF NOT EXISTS users (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                name TEXT NOT NULL,\n                email TEXT UNIQUE NOT NULL,\n                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n            )\n        ''')\n\ndef create_user(name, email):\n    with get_db() as db:\n        cursor = db.execute(\n            'INSERT INTO users (name, email) VALUES (?, ?)',\n            (name, email)\n        )\n        return cursor.lastrowid\n\ndef get_users():\n    with get_db() as db:\n        return db.execute('SELECT * FROM users').fetchall()\n\nif __name__ == '__main__':\n    init_db()"
+  },
+  "postgresql-python": {
+    "name": "PostgreSQL with psycopg2 (Python)",
+    "tags": ["python", "postgresql", "postgres", "database", "sql", "db"],
+    "code": "import psycopg2\nfrom psycopg2.extras import RealDictCursor\nimport os\n\nDATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://user:pass@localhost/dbname')\n\ndef get_connection():\n    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)\n\ndef execute_query(query, params=None, fetch=True):\n    conn = get_connection()\n    try:\n        with conn.cursor() as cur:\n            cur.execute(query, params)\n            if fetch:\n                return cur.fetchall()\n            conn.commit()\n    finally:\n        conn.close()\n\ndef create_user(name, email):\n    query = 'INSERT INTO users (name, email) VALUES (%s, %s) RETURNING id'\n    result = execute_query(query, (name, email))\n    return result[0]['id'] if result else None\n\ndef get_users():\n    return execute_query('SELECT * FROM users')\n\ndef get_user_by_id(user_id):\n    result = execute_query('SELECT * FROM users WHERE id = %s', (user_id,))\n    return result[0] if result else None"
   },
   "python-env": {
     "name": "Python Environment Setup",
-    "tags": ["python", "env", "dotenv", "environment"],
+    "tags": ["python", "env", "dotenv", "environment", "config"],
     "code": "import os\nfrom dotenv import load_dotenv\n\nload_dotenv()\n\nclass Config:\n    DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'\n    DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///app.db')\n    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')\n    API_KEY = os.getenv('API_KEY')\n\n    @classmethod\n    def validate(cls):\n        required = ['API_KEY']\n        missing = [var for var in required if not getattr(cls, var)]\n        if missing:\n            raise ValueError(f\"Missing required env vars: {missing}\")\n\nconfig = Config()"
   },
   "dockerfile": {
     "name": "Dockerfile for Node.js",
     "tags": ["docker", "dockerfile", "nodejs", "container"],
     "code": "FROM node:18-alpine\n\nWORKDIR /app\n\nCOPY package*.json ./\n\nRUN npm ci --only=production\n\nCOPY . .\n\nEXPOSE 3000\n\nENV NODE_ENV=production\n\nCMD [\"node\", \"server.js\"]"
+  },
+  "dockerfile-python": {
+    "name": "Dockerfile for Python",
+    "tags": ["docker", "dockerfile", "python", "container"],
+    "code": "FROM python:3.11-slim\n\nWORKDIR /app\n\nCOPY requirements.txt .\n\nRUN pip install --no-cache-dir -r requirements.txt\n\nCOPY . .\n\nEXPOSE 8000\n\nENV PYTHONUNBUFFERED=1\n\nCMD [\"uvicorn\", \"main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]"
   },
   "docker-compose": {
     "name": "Docker Compose Setup",
@@ -61,17 +101,47 @@
   },
   "python-flask": {
     "name": "Flask Basic Setup",
-    "tags": ["python", "flask", "backend", "api"],
+    "tags": ["python", "flask", "backend", "api", "starter"],
     "code": "from flask import Flask, jsonify, request\nfrom flask_cors import CORS\n\napp = Flask(__name__)\nCORS(app)\n\n@app.route('/')\ndef home():\n    return jsonify({'message': 'Hello World'})\n\n@app.route('/api/data', methods=['GET', 'POST'])\ndef handle_data():\n    if request.method == 'POST':\n        data = request.json\n        return jsonify({'received': data}), 201\n    return jsonify({'items': []})\n\nif __name__ == '__main__':\n    app.run(debug=True, port=5000)"
   },
   "tailwind-card": {
     "name": "Tailwind CSS Card Component",
-    "tags": ["tailwind", "css", "ui", "card"],
+    "tags": ["tailwind", "css", "ui", "card", "frontend"],
     "code": "<div class=\"max-w-sm rounded-lg overflow-hidden shadow-lg bg-white\">\n  <img class=\"w-full h-48 object-cover\" src=\"/image.jpg\" alt=\"Card image\">\n  <div class=\"px-6 py-4\">\n    <h2 class=\"font-bold text-xl mb-2 text-gray-800\">Card Title</h2>\n    <p class=\"text-gray-600 text-base\">Card description goes here.</p>\n  </div>\n  <div class=\"px-6 pt-4 pb-6\">\n    <button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded\">\n      Learn More\n    </button>\n  </div>\n</div>"
+  },
+  "tailwind-form": {
+    "name": "Tailwind CSS Form",
+    "tags": ["tailwind", "css", "form", "ui", "frontend"],
+    "code": "<form class=\"max-w-md mx-auto bg-white p-8 rounded-lg shadow-md\">\n  <div class=\"mb-4\">\n    <label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"email\">\n      Email\n    </label>\n    <input\n      class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500\"\n      id=\"email\" type=\"email\" placeholder=\"you@example.com\">\n  </div>\n  <div class=\"mb-6\">\n    <label class=\"block text-gray-700 text-sm font-bold mb-2\" for=\"password\">\n      Password\n    </label>\n    <input\n      class=\"shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500\"\n      id=\"password\" type=\"password\" placeholder=\"********\">\n  </div>\n  <div class=\"flex items-center justify-between\">\n    <button\n      class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500\"\n      type=\"submit\">\n      Sign In\n    </button>\n    <a class=\"text-sm text-blue-500 hover:text-blue-800\" href=\"#\">\n      Forgot Password?\n    </a>\n  </div>\n</form>"
   },
   "github-actions": {
     "name": "GitHub Actions CI/CD",
     "tags": ["github", "actions", "ci", "cd", "deployment"],
     "code": "name: CI/CD Pipeline\n\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n\n    steps:\n      - uses: actions/checkout@v4\n\n      - name: Setup Node.js\n        uses: actions/setup-node@v4\n        with:\n          node-version: '18'\n          cache: 'npm'\n\n      - name: Install dependencies\n        run: npm ci\n\n      - name: Run tests\n        run: npm test\n\n      - name: Build\n        run: npm run build"
+  },
+  "openai-chat": {
+    "name": "OpenAI Chat Completion",
+    "tags": ["openai", "ai", "chatgpt", "llm", "python"],
+    "code": "from openai import OpenAI\nimport os\n\nclient = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))\n\ndef chat(message, system_prompt=\"You are a helpful assistant.\"):\n    response = client.chat.completions.create(\n        model=\"gpt-4o-mini\",\n        messages=[\n            {\"role\": \"system\", \"content\": system_prompt},\n            {\"role\": \"user\", \"content\": message}\n        ]\n    )\n    return response.choices[0].message.content\n\ndef chat_with_history(messages):\n    response = client.chat.completions.create(\n        model=\"gpt-4o-mini\",\n        messages=messages\n    )\n    return response.choices[0].message.content\n\nif __name__ == '__main__':\n    reply = chat(\"What is Python?\")\n    print(reply)"
+  },
+  "openai-nodejs": {
+    "name": "OpenAI Chat (Node.js)",
+    "tags": ["openai", "ai", "chatgpt", "llm", "nodejs", "javascript"],
+    "code": "const OpenAI = require('openai');\n\nconst client = new OpenAI({\n  apiKey: process.env.OPENAI_API_KEY\n});\n\nasync function chat(message, systemPrompt = 'You are a helpful assistant.') {\n  const response = await client.chat.completions.create({\n    model: 'gpt-4o-mini',\n    messages: [\n      { role: 'system', content: systemPrompt },\n      { role: 'user', content: message }\n    ]\n  });\n  return response.choices[0].message.content;\n}\n\nasync function main() {\n  const reply = await chat('What is JavaScript?');\n  console.log(reply);\n}\n\nmain();"
+  },
+  "password-hash": {
+    "name": "Password Hashing (bcrypt)",
+    "tags": ["password", "hash", "bcrypt", "security", "auth"],
+    "code": "const bcrypt = require('bcrypt');\n\nconst SALT_ROUNDS = 10;\n\nasync function hashPassword(password) {\n  return await bcrypt.hash(password, SALT_ROUNDS);\n}\n\nasync function verifyPassword(password, hash) {\n  return await bcrypt.compare(password, hash);\n}\n\nmodule.exports = { hashPassword, verifyPassword };\n\n// Usage:\n// const hash = await hashPassword('mypassword');\n// const isValid = await verifyPassword('mypassword', hash);"
+  },
+  "email-send": {
+    "name": "Send Email (Nodemailer)",
+    "tags": ["email", "nodemailer", "smtp", "nodejs"],
+    "code": "const nodemailer = require('nodemailer');\n\nconst transporter = nodemailer.createTransport({\n  host: process.env.SMTP_HOST,\n  port: process.env.SMTP_PORT || 587,\n  secure: false,\n  auth: {\n    user: process.env.SMTP_USER,\n    pass: process.env.SMTP_PASS\n  }\n});\n\nasync function sendEmail({ to, subject, text, html }) {\n  const info = await transporter.sendMail({\n    from: process.env.SMTP_FROM || 'noreply@example.com',\n    to,\n    subject,\n    text,\n    html\n  });\n  return info.messageId;\n}\n\nmodule.exports = { sendEmail };\n\n// Usage:\n// await sendEmail({\n//   to: 'user@example.com',\n//   subject: 'Hello',\n//   text: 'Hello World!'\n// });"
+  },
+  "rate-limiter": {
+    "name": "Rate Limiter Middleware",
+    "tags": ["rate-limit", "security", "middleware", "express"],
+    "code": "const rateLimit = require('express-rate-limit');\n\nconst limiter = rateLimit({\n  windowMs: 15 * 60 * 1000, // 15 minutes\n  max: 100, // limit each IP to 100 requests per window\n  message: { error: 'Too many requests, please try again later.' },\n  standardHeaders: true,\n  legacyHeaders: false\n});\n\nconst strictLimiter = rateLimit({\n  windowMs: 60 * 1000, // 1 minute\n  max: 5, // 5 requests per minute\n  message: { error: 'Rate limit exceeded. Try again in a minute.' }\n});\n\nmodule.exports = { limiter, strictLimiter };\n\n// Usage:\n// app.use('/api/', limiter);\n// app.post('/login', strictLimiter, loginHandler);"
   }
 }

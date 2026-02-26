@@ -58,6 +58,23 @@ body {
   flex-shrink: 0;
 }
 
+.sidebar-header {
+  -webkit-app-region: drag;
+  padding-top: 12px;
+  padding-bottom: 8px;
+}
+
+.sidebar-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.sidebar-header p b {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
 .sidebar h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -65,6 +82,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  -webkit-app-region: drag;
 }
 
 .sidebar > p {
@@ -85,6 +103,34 @@ body {
   margin: 24px 0;
 }
 
+/* Draggable region for window */
+.drag-region {
+  -webkit-app-region: drag;
+  height: 38px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Make all interactive elements non-draggable */
+button,
+input,
+textarea,
+select,
+a,
+.card,
+.faq-card,
+.tab-btn,
+.suggestion-chip,
+.qa-btn,
+.copy-btn,
+.send-btn,
+.mode-toggle,
+.close-btn {
+  -webkit-app-region: no-drag;
+}
+
 .nav-btn {
   width: 100%;
   margin-top: 6px;
@@ -102,6 +148,7 @@ body {
   align-items: center;
   gap: 12px;
   border: 1px solid transparent;
+  -webkit-app-region: no-drag;
 }
 
 .nav-btn:hover {
@@ -139,6 +186,7 @@ body {
   padding: 28px 32px 20px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag;
 }
 
 .section-header h2 {
@@ -551,6 +599,7 @@ body {
   outline: none;
   transition: var(--transition);
   background: var(--bg-secondary);
+  -webkit-app-region: no-drag;
 }
 
 .filter-bar input:focus {
