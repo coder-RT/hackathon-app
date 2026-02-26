@@ -52,11 +52,15 @@ const tools = [
     type: "function",
     function: {
       name: "get_code_snippet",
-      description: "Get a pre-defined code snippet or template by keyword or technology",
+      description: "Get a pre-defined code snippet or template. IMPORTANT: Always specify the language parameter when the user mentions a specific language.",
       parameters: {
         type: "object",
         properties: {
-          query: { type: "string", description: "Technology or keyword (e.g., 'fastapi file upload', 'react component', 'jwt auth')" }
+          query: { type: "string", description: "What the user wants (e.g., 'file upload', 'crud api', 'authentication')" },
+          language: { 
+            type: "string", 
+            description: "Programming language or framework. REQUIRED if user specifies one. Options: typescript, javascript, python, react, express, fastapi, flask, nextjs, prisma, etc."
+          }
         },
         required: ["query"]
       }
@@ -96,10 +100,72 @@ const tools = [
   }
 ]
 
-function scoreSnippet(snippet, key, queryWords) {
+const LANGUAGE_ALIASES = {
+  ts: 'typescript',
+  tsx: 'typescript',
+  js: 'javascript',
+  jsx: 'javascript',
+  py: 'python',
+  node: 'nodejs',
+  'node.js': 'nodejs'
+}
+
+const DETECTABLE_LANGUAGES = [
+  'typescript', 'javascript', 'python', 'react', 'express', 
+  'fastapi', 'flask', 'nextjs', 'next.js', 'prisma', 'zod',
+  'fastify', 'nodejs', 'node', 'ts', 'js', 'py'
+]
+
+function detectLanguage(query) {
+  const q = query.toLowerCase()
+  const words = q.split(/\s+/)
+  
+  for (const word of words) {
+    if (DETECTABLE_LANGUAGES.includes(word)) {
+      return normalizeLanguage(word)
+    }
+  }
+  
+  for (const lang of DETECTABLE_LANGUAGES) {
+    if (q.includes(lang)) {
+      return normalizeLanguage(lang)
+    }
+  }
+  
+  return null
+}
+
+function normalizeLanguage(lang) {
+  if (!lang) return null
+  const lower = lang.toLowerCase().trim()
+  return LANGUAGE_ALIASES[lower] || lower
+}
+
+function snippetMatchesLanguage(snippet, language) {
+  if (!language) return true
+  const tags = snippet.tags.map(t => t.toLowerCase())
+  const normalizedLang = normalizeLanguage(language)
+  
+  return tags.some(tag => {
+    const normalizedTag = normalizeLanguage(tag)
+    return normalizedTag === normalizedLang || 
+           tag.includes(normalizedLang) || 
+           normalizedLang.includes(tag)
+  })
+}
+
+function scoreSnippet(snippet, key, queryWords, language = null) {
   let score = 0
   const name = snippet.name.toLowerCase()
   const tags = snippet.tags.map(t => t.toLowerCase())
+  
+  if (language && !snippetMatchesLanguage(snippet, language)) {
+    return -1
+  }
+  
+  if (language && snippetMatchesLanguage(snippet, language)) {
+    score += 50
+  }
   
   for (const word of queryWords) {
     if (word.length < 2) continue
@@ -117,7 +183,7 @@ function scoreSnippet(snippet, key, queryWords) {
   return score
 }
 
-function findSnippetWithScore(query, minScore = 10) {
+function findSnippetWithScore(query, language = null, minScore = 10) {
   const q = query.toLowerCase()
   const queryWords = q.split(/\s+/).filter(w => w.length > 1)
   
@@ -125,7 +191,7 @@ function findSnippetWithScore(query, minScore = 10) {
   let bestScore = 0
   
   for (const [key, snippet] of Object.entries(snippets)) {
-    const score = scoreSnippet(snippet, key, queryWords)
+    const score = scoreSnippet(snippet, key, queryWords, language)
     if (score > bestScore) {
       bestScore = score
       bestMatch = { ...snippet, id: key, score }
@@ -139,15 +205,17 @@ function findSnippetWithScore(query, minScore = 10) {
   return null
 }
 
-function findAllSnippets(query, limit = 5) {
+function findAllSnippets(query, language = null, limit = 5) {
   const q = query.toLowerCase()
   const queryWords = q.split(/\s+/).filter(w => w.length > 1)
   
-  const scored = Object.entries(snippets).map(([key, snippet]) => ({
-    ...snippet,
-    id: key,
-    score: scoreSnippet(snippet, key, queryWords)
-  }))
+  const scored = Object.entries(snippets)
+    .map(([key, snippet]) => ({
+      ...snippet,
+      id: key,
+      score: scoreSnippet(snippet, key, queryWords, language)
+    }))
+    .filter(s => s.score >= 0)
   
   return scored
     .filter(s => s.score > 0)
@@ -185,15 +253,15 @@ function findFaq(errorDescription) {
 
 async function executeTool(name, args) {
   if (name === "create_project") {
-    const snippet = findSnippetWithScore(args.type, 8)
+    const snippet = findSnippetWithScore(args.type, null, 8)
     if (snippet) {
       return {
-        text: `✅ Created ${args.type} project!\n\n**${snippet.name}**\n\`\`\`\n${snippet.code}\n\`\`\``,
+        text: `Created ${args.type} project!\n\n**${snippet.name}**\n\`\`\`\n${snippet.code}\n\`\`\``,
         source: "snippet",
         snippetId: snippet.id
       }
     }
-    return { text: `✅ Created ${args.type} project with basic structure`, source: "tool" }
+    return { text: `Created ${args.type} project with basic structure`, source: "tool" }
   }
 
   if (name === "deploy_app") {
@@ -204,23 +272,37 @@ async function executeTool(name, args) {
   }
 
   if (name === "get_code_snippet") {
-    const snippet = findSnippetWithScore(args.query, 10)
+    const language = args.language || null
+    const snippet = findSnippetWithScore(args.query, language, 10)
+    
     if (snippet) {
       return {
-        text: `📝 **${snippet.name}**\n\nTags: ${snippet.tags.join(", ")}\n\n\`\`\`\n${snippet.code}\n\`\`\``,
+        text: `**${snippet.name}**\n\nTags: ${snippet.tags.join(", ")}\n\n\`\`\`\n${snippet.code}\n\`\`\``,
         source: "snippet",
         snippetId: snippet.id,
         confidence: snippet.score
       }
     }
     
-    const suggestions = findAllSnippets(args.query, 3)
+    const suggestions = findAllSnippets(args.query, language, 3)
     if (suggestions.length > 0) {
-      const suggestionText = suggestions.map(s => `• ${s.name}`).join("\n")
+      const suggestionText = suggestions.map(s => `• ${s.name} (${s.tags.slice(0, 3).join(", ")})`).join("\n")
       return {
-        text: `No exact match for "${args.query}". Did you mean:\n${suggestionText}`,
-        source: "snippet",
+        text: `No exact match for "${args.query}"${language ? ` in ${language}` : ""}. Did you mean:\n${suggestionText}`,
+        source: "suggestions",
         suggestions: suggestions.map(s => s.id)
+      }
+    }
+    
+    if (language) {
+      const anySnippets = findAllSnippets(args.query, null, 3)
+      if (anySnippets.length > 0) {
+        const suggestionText = anySnippets.map(s => `• ${s.name} (${s.tags.slice(0, 3).join(", ")})`).join("\n")
+        return {
+          text: `No ${language} snippets found for "${args.query}". Available in other languages:\n${suggestionText}`,
+          source: "suggestions",
+          suggestions: anySnippets.map(s => s.id)
+        }
       }
     }
     
@@ -286,32 +368,56 @@ Your capabilities:
 4. **Project Creation**: Use create_project to scaffold projects
 5. **Deployment**: Use deploy_app to deploy applications
 
-When users ask for code, use get_code_snippet first. If no snippet matches, generate the code yourself.
-Be concise, helpful, and encouraging.`
+IMPORTANT RULES:
+- When users ask for code, ALWAYS use get_code_snippet first before generating code yourself.
+- When users specify a programming language (TypeScript, Python, JavaScript, etc.), you MUST pass it as the "language" parameter to get_code_snippet.
+- If a user says "no" or corrects you about the language, pay attention and use the correct language parameter.
+- Common language keywords to detect: typescript/ts, javascript/js, python/py, react, express, fastapi, flask, nextjs, etc.
+
+Examples:
+- "file upload in typescript" → get_code_snippet(query: "file upload", language: "typescript")
+- "python api" → get_code_snippet(query: "api", language: "python")
+- "react component" → get_code_snippet(query: "component", language: "react")
+
+Be concise, helpful, and encouraging. If no snippet matches the exact criteria, offer alternatives or generate code.`
 
 app.post("/chat", async (req, res) => {
   try {
     const { message, mode = "auto" } = req.body
     
     if (mode === "snippets") {
-      const snippet = findSnippetWithScore(message, 5)
+      const detectedLang = detectLanguage(message)
+      const snippet = findSnippetWithScore(message, detectedLang, 5)
+      
       if (snippet) {
         return res.json({
-          reply: `📝 **${snippet.name}**\n\nTags: ${snippet.tags.join(", ")}\n\n\`\`\`\n${snippet.code}\n\`\`\``,
+          reply: `**${snippet.name}**\n\nTags: ${snippet.tags.join(", ")}\n\n\`\`\`\n${snippet.code}\n\`\`\``,
           mode: "snippets",
           source: "snippet",
           snippetId: snippet.id
         })
       }
       
-      const suggestions = findAllSnippets(message, 5)
+      const suggestions = findAllSnippets(message, detectedLang, 5)
       if (suggestions.length > 0) {
         return res.json({
-          reply: `No exact match. Available snippets:\n${suggestions.map(s => `• **${s.name}** (${s.tags.slice(0, 3).join(", ")})`).join("\n")}`,
+          reply: `No exact match${detectedLang ? ` for ${detectedLang}` : ""}. Available snippets:\n${suggestions.map(s => `• **${s.name}** (${s.tags.slice(0, 3).join(", ")})`).join("\n")}`,
           mode: "snippets",
           source: "suggestions",
           suggestions: suggestions.map(s => ({ id: s.id, name: s.name }))
         })
+      }
+      
+      if (detectedLang) {
+        const anySnippets = findAllSnippets(message, null, 5)
+        if (anySnippets.length > 0) {
+          return res.json({
+            reply: `No ${detectedLang} snippets found. Available in other languages:\n${anySnippets.map(s => `• **${s.name}** (${s.tags.slice(0, 3).join(", ")})`).join("\n")}`,
+            mode: "snippets",
+            source: "suggestions",
+            suggestions: anySnippets.map(s => ({ id: s.id, name: s.name }))
+          })
+        }
       }
       
       return res.json({
