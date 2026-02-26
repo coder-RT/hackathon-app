@@ -35,15 +35,22 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: 
-    radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
-    linear-gradient(135deg, #0a0f1a 0%, #111827 50%, #0a0f1a 100%);
+  background: linear-gradient(135deg, #0a0f1a 0%, #0f172a 50%, #0a0f1a 100%);
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
+  overflow: hidden;
+}
+
+#particles-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .container {
@@ -51,53 +58,25 @@ body {
   height: 100vh;
   overflow: hidden;
   position: relative;
-}
-
-.container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: radial-gradient(rgba(99, 102, 241, 0.15) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
-  z-index: 0;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+  z-index: 1;
 }
 
 /* Sidebar */
 .sidebar {
   width: 280px;
   background: 
-    radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
-    linear-gradient(180deg, #0a0f1a 0%, #111827 50%, #0a0f1a 100%);
+    radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(10, 15, 26, 0.95) 0%, rgba(15, 23, 42, 0.95) 50%, rgba(10, 15, 26, 0.95) 100%);
   color: white;
   padding: 24px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-right: 1px solid rgba(99, 102, 241, 0.15);
+  border-right: 1px solid rgba(99, 102, 241, 0.2);
   position: relative;
-  z-index: 1;
-}
-
-.sidebar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: radial-gradient(rgba(99, 102, 241, 0.12) 1px, transparent 1px);
-  background-size: 20px 20px;
-  pointer-events: none;
-  opacity: 0.5;
-  mask-image: linear-gradient(180deg, black 0%, transparent 70%);
-  -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 70%);
+  z-index: 2;
+  backdrop-filter: blur(10px);
 }
 
 .sidebar::after {
@@ -105,10 +84,11 @@ body {
   position: absolute;
   top: 10%;
   right: 0;
-  width: 1px;
+  width: 2px;
   height: 80%;
-  background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.4) 30%, rgba(139, 92, 246, 0.6) 50%, rgba(99, 102, 241, 0.4) 70%, transparent 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(99, 102, 241, 0.5) 30%, rgba(139, 92, 246, 0.8) 50%, rgba(99, 102, 241, 0.5) 70%, transparent 100%);
   pointer-events: none;
+  filter: blur(1px);
 }
 
 .sidebar-header {
@@ -228,27 +208,12 @@ a,
   display: flex;
   flex-direction: column;
   background: 
-    radial-gradient(ellipse at top right, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom left, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
-    linear-gradient(180deg, #fafbfc 0%, #f1f5f9 50%, #e8ecf2 100%);
+    radial-gradient(ellipse at top right, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom left, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(250, 251, 252, 0.97) 0%, rgba(241, 245, 249, 0.97) 50%, rgba(232, 236, 242, 0.97) 100%);
   overflow: hidden;
   position: relative;
-}
-
-.main::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: radial-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4;
-  mask-image: radial-gradient(ellipse 100% 100% at 100% 0%, black 20%, transparent 70%);
-  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 100% 0%, black 20%, transparent 70%);
+  backdrop-filter: blur(10px);
 }
 
 .main > * {
