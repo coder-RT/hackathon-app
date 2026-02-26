@@ -5,89 +5,6 @@ let quickActionsData = []
 let appConfig = {}
 let currentMode = 'auto'
 
-function initParticles() {
-  if (typeof tsParticles === 'undefined') {
-    console.warn('tsParticles not loaded')
-    return
-  }
-  
-  tsParticles.load("particles-bg", {
-    fullScreen: false,
-    background: {
-      color: "transparent"
-    },
-    particles: {
-      number: {
-        value: 60,
-        density: {
-          enable: true,
-          area: 800
-        }
-      },
-      color: {
-        value: ["#6366f1", "#8b5cf6", "#a855f7", "#10b981"]
-      },
-      shape: {
-        type: "circle"
-      },
-      opacity: {
-        value: { min: 0.3, max: 0.7 },
-        animation: {
-          enable: true,
-          speed: 0.5,
-          minimumValue: 0.2,
-          sync: false
-        }
-      },
-      size: {
-        value: { min: 2, max: 5 },
-        animation: {
-          enable: true,
-          speed: 2,
-          minimumValue: 1,
-          sync: false
-        }
-      },
-      move: {
-        enable: true,
-        speed: 0.8,
-        direction: "none",
-        random: true,
-        straight: false,
-        outModes: "bounce",
-        attract: {
-          enable: true,
-          rotateX: 600,
-          rotateY: 1200
-        }
-      },
-      links: {
-        enable: true,
-        distance: 120,
-        color: "#6366f1",
-        opacity: 0.15,
-        width: 1
-      }
-    },
-    interactivity: {
-      events: {
-        onHover: {
-          enable: true,
-          mode: "grab"
-        }
-      },
-      modes: {
-        grab: {
-          distance: 150,
-          links: {
-            opacity: 0.3
-          }
-        }
-      }
-    },
-    detectRetina: true
-  })
-}
 
 const modeLabels = {
   auto: 'Auto',
@@ -118,7 +35,6 @@ const sourceIcons = {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initParticles()
   await initApp()
   loadSnippets()
   loadResources()

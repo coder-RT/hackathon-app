@@ -35,7 +35,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #0a0f1a 0%, #0f172a 50%, #0a0f1a 100%);
+  background: linear-gradient(135deg, #070b14 0%, #0f172a 50%, #070b14 100%);
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -43,7 +43,8 @@ body {
   overflow: hidden;
 }
 
-#particles-bg {
+/* Animated Dot Grid Background */
+.bg-dots {
   position: fixed;
   top: 0;
   left: 0;
@@ -51,6 +52,71 @@ body {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+  background-image: 
+    radial-gradient(circle at center, rgba(99, 102, 241, 0.4) 0%, rgba(99, 102, 241, 0.4) 3px, transparent 3px),
+    radial-gradient(circle at center, rgba(139, 92, 246, 0.3) 0%, rgba(139, 92, 246, 0.3) 2px, transparent 2px);
+  background-size: 48px 48px, 72px 72px;
+  background-position: 0 0, 24px 24px;
+  animation: dotPulse 8s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Animated Glow Orbs */
+.bg-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+  animation: glowMove1 20s ease-in-out infinite;
+}
+
+.bg-glow-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+  bottom: -50px;
+  right: -50px;
+  animation: glowMove2 25s ease-in-out infinite;
+}
+
+.bg-glow-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: glowMove3 18s ease-in-out infinite;
+}
+
+@keyframes glowMove1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(50px, 30px) scale(1.1); }
+  50% { transform: translate(20px, 60px) scale(0.9); }
+  75% { transform: translate(-30px, 20px) scale(1.05); }
+}
+
+@keyframes glowMove2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, -30px) scale(1.15); }
+  66% { transform: translate(30px, -50px) scale(0.95); }
+}
+
+@keyframes glowMove3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  50% { transform: translate(100px, -50px) scale(1.2); opacity: 1; }
 }
 
 .container {
