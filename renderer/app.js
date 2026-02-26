@@ -56,21 +56,74 @@ async function initApp() {
 function addWelcomeMessage() {
   const chatBox = document.getElementById('chat-box')
   const welcome = document.createElement('div')
-  welcome.className = 'message ai'
+  welcome.className = 'message ai welcome-message'
   welcome.innerHTML = `
     <div class="welcome-content">
-      <h3>Welcome to HackHub!</h3>
-      <p>I'm your AI assistant for this hackathon. Here's what I can help you with:</p>
-      <ul>
-        <li><strong>Code Snippets</strong> - Get pre-built templates for common patterns</li>
-        <li><strong>Debugging</strong> - Troubleshoot errors and issues</li>
-        <li><strong>Resources</strong> - Access hackathon rules, timelines, and APIs</li>
-        <li><strong>AI Generation</strong> - Create custom code when needed</li>
-      </ul>
-      <p style="margin-top: 12px; color: var(--text-muted);">Try asking: "How do I set up FastAPI?" or "Show me file upload code"</p>
+      <div class="welcome-header">
+        <div class="welcome-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div>
+          <h3>Welcome to your Hackathon Assistant</h3>
+          <p class="welcome-subtitle">Your AI-powered companion for building faster</p>
+        </div>
+      </div>
+      
+      <div class="welcome-features">
+        <div class="welcome-feature">
+          <div class="feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <div class="feature-text">
+            <strong>Code Snippets</strong>
+            <span>Pre-built templates for common patterns</span>
+          </div>
+        </div>
+        <div class="welcome-feature">
+          <div class="feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+          </div>
+          <div class="feature-text">
+            <strong>Debugging Help</strong>
+            <span>Troubleshoot errors and issues</span>
+          </div>
+        </div>
+        <div class="welcome-feature">
+          <div class="feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
+          <div class="feature-text">
+            <strong>Resources</strong>
+            <span>Rules, timelines, and API docs</span>
+          </div>
+        </div>
+        <div class="welcome-feature">
+          <div class="feature-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10"></path><path d="M12 2a7 7 0 0 1 7 7"></path></svg>
+          </div>
+          <div class="feature-text">
+            <strong>AI Generation</strong>
+            <span>Create custom code when needed</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="welcome-suggestions">
+        <span class="suggestions-label">Try asking:</span>
+        <button class="suggestion-chip" onclick="useSuggestion('How do I set up FastAPI?')">How do I set up FastAPI?</button>
+        <button class="suggestion-chip" onclick="useSuggestion('Show me file upload code')">Show me file upload code</button>
+        <button class="suggestion-chip" onclick="useSuggestion('What are the hackathon rules?')">What are the rules?</button>
+      </div>
     </div>
   `
   chatBox.appendChild(welcome)
+}
+
+function useSuggestion(text) {
+  document.getElementById('input').value = text
+  document.getElementById('input').focus()
 }
 
 function setupUpdateListeners() {
