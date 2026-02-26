@@ -19,6 +19,43 @@ const snippets = JSON.parse(fs.readFileSync(path.join(dataDir, "snippets.json"),
 const resources = JSON.parse(fs.readFileSync(path.join(dataDir, "resources.json"), "utf-8"))
 const faqs = JSON.parse(fs.readFileSync(path.join(dataDir, "faqs.json"), "utf-8"))
 
+function loadConfig() {
+  try {
+    const configPath = path.join(__dirname, "..", "config.json")
+    if (fs.existsSync(configPath)) {
+      return JSON.parse(fs.readFileSync(configPath, "utf-8"))
+    }
+  } catch (err) {
+    console.error("Failed to load config.json:", err.message)
+  }
+  return {}
+}
+
+const appConfig = loadConfig()
+
+const routingConfig = {
+  llmTags: appConfig.routing?.llmTags || ["generate:", "GENERATE:", "@llm", "@LLM", "@ai", "@AI", "gen:"],
+  snippetTags: appConfig.routing?.snippetTags || ["snippet:", "SNIPPET:", "@snippet", "@code"]
+}
+
+function detectRoutingTag(message) {
+  const trimmed = message.trim()
+  
+  for (const tag of routingConfig.llmTags) {
+    if (trimmed.toLowerCase().startsWith(tag.toLowerCase())) {
+      return { mode: "llm", cleanMessage: trimmed.slice(tag.length).trim() }
+    }
+  }
+  
+  for (const tag of routingConfig.snippetTags) {
+    if (trimmed.toLowerCase().startsWith(tag.toLowerCase())) {
+      return { mode: "snippets", cleanMessage: trimmed.slice(tag.length).trim() }
+    }
+  }
+  
+  return { mode: null, cleanMessage: message }
+}
+
 const tools = [
   {
     type: "function",
@@ -383,7 +420,11 @@ Be concise, helpful, and encouraging. If no snippet matches the exact criteria, 
 
 app.post("/chat", async (req, res) => {
   try {
-    const { message, mode = "auto" } = req.body
+    const { message: rawMessage, mode: requestedMode = "auto" } = req.body
+    
+    const { mode: tagMode, cleanMessage } = detectRoutingTag(rawMessage)
+    const mode = tagMode || requestedMode
+    const message = tagMode ? cleanMessage : rawMessage
     
     if (mode === "snippets") {
       const detectedLang = detectLanguage(message)
@@ -533,11 +574,15 @@ app.get("/quick-actions", (req, res) => {
   const actions = [
     { id: "fastapi-basic", label: "FastAPI Starter", icon: "🐍", category: "backend" },
     { id: "express-basic", label: "Express Starter", icon: "🟢", category: "backend" },
+    { id: "typescript-express-basic", label: "TypeScript Express", icon: "🔷", category: "backend" },
     { id: "react-component", label: "React Component", icon: "⚛️", category: "frontend" },
+    { id: "typescript-react-file-upload", label: "React Upload (TS)", icon: "📁", category: "frontend" },
     { id: "fastapi-file-upload", label: "File Upload (Python)", icon: "📁", category: "feature" },
-    { id: "express-file-upload", label: "File Upload (Node)", icon: "📁", category: "feature" },
+    { id: "typescript-express-file-upload", label: "File Upload (TS)", icon: "📁", category: "feature" },
     { id: "jwt-auth", label: "JWT Auth", icon: "🔐", category: "security" },
+    { id: "typescript-zod-validation", label: "Zod Validation", icon: "✅", category: "security" },
     { id: "mongodb-connect", label: "MongoDB Setup", icon: "🍃", category: "database" },
+    { id: "typescript-prisma-crud", label: "Prisma CRUD (TS)", icon: "💎", category: "database" },
     { id: "docker-compose", label: "Docker Compose", icon: "🐳", category: "devops" },
     { id: "rules", label: "Hackathon Rules", icon: "📜", category: "info", type: "resource" },
     { id: "timeline", label: "Timeline", icon: "⏰", category: "info", type: "resource" },
@@ -545,6 +590,13 @@ app.get("/quick-actions", (req, res) => {
     { id: "prizes", label: "Prizes", icon: "🏆", category: "info", type: "resource" }
   ]
   res.json(actions)
+})
+
+app.get("/routing-config", (req, res) => {
+  res.json({
+    llmTags: routingConfig.llmTags,
+    snippetTags: routingConfig.snippetTags
+  })
 })
 
 app.listen(3000, () => {

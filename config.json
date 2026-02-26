@@ -15,5 +15,9 @@
     "name": "Hackathon",
     "theme": "AI for Good",
     "duration": "48 Hours"
+  },
+  "routing": {
+    "llmTags": ["generate:", "GENERATE:", "@llm", "@LLM", "@ai", "@AI", "gen:"],
+    "snippetTags": ["snippet:", "SNIPPET:", "@snippet", "@code"]
   }
 }
