@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hackathon App</title>
+  <title>HackHub - Your Hackathon Companion</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -10,16 +13,45 @@
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <h2>🚀 Hackathon</h2>
+    <h2>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+      HackHub
+    </h2>
     <p><b>Theme:</b> AI for Good</p>
-    <p><b>Time:</b> 48 Hours</p>
+    <p><b>Duration:</b> 48 Hours</p>
 
     <hr>
 
-    <button class="nav-btn active" onclick="showSection('chat')">💬 Chat</button>
-    <button class="nav-btn" onclick="showSection('snippets')">📝 Snippets</button>
-    <button class="nav-btn" onclick="showSection('resources')">📋 Resources</button>
-    <button class="nav-btn" onclick="showSection('faq')">❓ FAQ</button>
+    <button class="nav-btn active" onclick="showSection('chat')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      AI Assistant
+    </button>
+    <button class="nav-btn" onclick="showSection('snippets')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"></polyline>
+        <polyline points="8 6 2 12 8 18"></polyline>
+      </svg>
+      Code Snippets
+    </button>
+    <button class="nav-btn" onclick="showSection('resources')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+      </svg>
+      Resources
+    </button>
+    <button class="nav-btn" onclick="showSection('faq')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      FAQ
+    </button>
   </div>
 
   <!-- Main Content -->
@@ -27,22 +59,116 @@
 
     <!-- Chat Section -->
     <div id="chat-section" class="section">
+      <div class="section-header">
+        <h2>AI Assistant</h2>
+        <p>Ask questions, get code snippets, or debug issues</p>
+      </div>
+      
       <div id="chat-box"></div>
 
+      <!-- Quick Actions Panel -->
+      <div id="quick-actions-panel" class="quick-actions-panel" style="display: none;">
+        <div class="quick-actions-header">
+          <span>Quick Actions</span>
+          <button class="close-btn" onclick="toggleQuickActions()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div id="quick-actions-grid" class="quick-actions-grid"></div>
+      </div>
+
+      <div class="mode-indicator">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Mode: <span id="current-mode-label">Auto</span>
+      </div>
+
       <div class="input-box">
-        <input id="input" placeholder="Ask the agent..." onkeypress="handleKeyPress(event)" />
-        <button onclick="send()">Send</button>
+        <input id="input" placeholder="Ask anything... (e.g., 'How do I set up FastAPI?')" onkeypress="handleKeyPress(event)" />
+        
+        <div class="send-group">
+          <button class="send-btn" onclick="send()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            Send
+          </button>
+          <button class="mode-toggle" onclick="toggleModeMenu()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          
+          <div id="mode-menu" class="mode-menu">
+            <div class="mode-option active" data-mode="auto" onclick="selectMode('auto')">
+              <span class="mode-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </span>
+              <div class="mode-info">
+                <span class="mode-name">Auto</span>
+                <span class="mode-desc">Smart routing between snippets and AI</span>
+              </div>
+            </div>
+            <div class="mode-option" data-mode="snippets" onclick="selectMode('snippets')">
+              <span class="mode-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+              </span>
+              <div class="mode-info">
+                <span class="mode-name">Snippets Only</span>
+                <span class="mode-desc">Use pre-defined code templates</span>
+              </div>
+            </div>
+            <div class="mode-option" data-mode="llm" onclick="selectMode('llm')">
+              <span class="mode-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                  <path d="M12 2a7 7 0 0 1 7 7h-7V2z"></path>
+                </svg>
+              </span>
+              <div class="mode-info">
+                <span class="mode-name">AI Generate</span>
+                <span class="mode-desc">Generate fresh responses with AI</span>
+              </div>
+            </div>
+            <div class="mode-divider"></div>
+            <div class="mode-option" onclick="toggleQuickActions()">
+              <span class="mode-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </span>
+              <div class="mode-info">
+                <span class="mode-name">Quick Actions</span>
+                <span class="mode-desc">Common tasks and templates</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Snippets Section -->
     <div id="snippets-section" class="section" style="display:none;">
       <div class="section-header">
-        <h2>📝 Code Snippets</h2>
-        <p>Pre-defined code templates to save time. Click to copy!</p>
+        <h2>Code Snippets</h2>
+        <p>Pre-built code templates to accelerate your development</p>
       </div>
       <div class="filter-bar">
-        <input id="snippet-search" placeholder="Search snippets..." oninput="filterSnippets()" />
+        <input id="snippet-search" placeholder="Search snippets by name, language, or framework..." oninput="filterSnippets()" />
       </div>
       <div id="snippets-list" class="card-grid"></div>
     </div>
@@ -50,15 +176,48 @@
     <!-- Resources Section -->
     <div id="resources-section" class="section" style="display:none;">
       <div class="section-header">
-        <h2>📋 Hackathon Resources</h2>
-        <p>Rules, timeline, APIs, and everything you need.</p>
+        <h2>Hackathon Resources</h2>
+        <p>Everything you need to know about this hackathon</p>
       </div>
       <div class="tabs">
-        <button class="tab-btn active" onclick="showResourceTab('rules')">Rules</button>
-        <button class="tab-btn" onclick="showResourceTab('timeline')">Timeline</button>
-        <button class="tab-btn" onclick="showResourceTab('apis')">APIs</button>
-        <button class="tab-btn" onclick="showResourceTab('judging')">Judging</button>
-        <button class="tab-btn" onclick="showResourceTab('prizes')">Prizes</button>
+        <button class="tab-btn active" onclick="showResourceTab('rules')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Rules
+        </button>
+        <button class="tab-btn" onclick="showResourceTab('timeline')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Timeline
+        </button>
+        <button class="tab-btn" onclick="showResourceTab('apis')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          APIs
+        </button>
+        <button class="tab-btn" onclick="showResourceTab('judging')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          Judging
+        </button>
+        <button class="tab-btn" onclick="showResourceTab('prizes')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          Prizes
+        </button>
       </div>
       <div id="resources-content" class="resource-content"></div>
     </div>
@@ -66,17 +225,19 @@
     <!-- FAQ Section -->
     <div id="faq-section" class="section" style="display:none;">
       <div class="section-header">
-        <h2>❓ FAQ & Troubleshooting</h2>
-        <p>Common issues and their solutions.</p>
+        <h2>FAQ & Troubleshooting</h2>
+        <p>Common issues and step-by-step solutions</p>
       </div>
       <div class="filter-bar">
-        <input id="faq-search" placeholder="Search by error or keyword..." oninput="filterFaqs()" />
+        <input id="faq-search" placeholder="Search by error message, keyword, or technology..." oninput="filterFaqs()" />
       </div>
       <div id="faq-list" class="faq-container"></div>
     </div>
 
   </div>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script src="app.js"></script>
 </body>

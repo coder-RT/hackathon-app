@@ -1,14 +1,47 @@
 let snippetsData = []
 let faqsData = []
 let resourcesData = {}
+let quickActionsData = []
 let appConfig = {}
+let currentMode = 'auto'
+
+const modeLabels = {
+  auto: 'Auto',
+  snippets: 'Snippets',
+  llm: 'AI Generate'
+}
+
+const sourceLabels = {
+  snippet: 'Snippet',
+  generated: 'AI Generated',
+  resource: 'Resource',
+  faq: 'FAQ',
+  tool: 'Tool',
+  suggestions: 'Suggestions',
+  none: 'Not Found',
+  error: 'Error'
+}
+
+const sourceIcons = {
+  snippet: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
+  generated: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg>',
+  resource: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
+  faq: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+  tool: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4"></path></svg>',
+  suggestions: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>',
+  none: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+  error: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>'
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initApp()
   loadSnippets()
   loadResources()
   loadFaqs()
+  loadQuickActions()
   setupUpdateListeners()
+  setupClickOutside()
+  addWelcomeMessage()
 })
 
 async function initApp() {
@@ -18,6 +51,26 @@ async function initApp() {
   } catch (err) {
     console.error('Failed to initialize app config:', err)
   }
+}
+
+function addWelcomeMessage() {
+  const chatBox = document.getElementById('chat-box')
+  const welcome = document.createElement('div')
+  welcome.className = 'message ai'
+  welcome.innerHTML = `
+    <div class="welcome-content">
+      <h3>Welcome to HackHub!</h3>
+      <p>I'm your AI assistant for this hackathon. Here's what I can help you with:</p>
+      <ul>
+        <li><strong>Code Snippets</strong> - Get pre-built templates for common patterns</li>
+        <li><strong>Debugging</strong> - Troubleshoot errors and issues</li>
+        <li><strong>Resources</strong> - Access hackathon rules, timelines, and APIs</li>
+        <li><strong>AI Generation</strong> - Create custom code when needed</li>
+      </ul>
+      <p style="margin-top: 12px; color: var(--text-muted);">Try asking: "How do I set up FastAPI?" or "Show me file upload code"</p>
+    </div>
+  `
+  chatBox.appendChild(welcome)
 }
 
 function setupUpdateListeners() {
@@ -30,15 +83,107 @@ function setupUpdateListeners() {
   })
 }
 
+function setupClickOutside() {
+  document.addEventListener('click', (e) => {
+    const modeMenu = document.getElementById('mode-menu')
+    const modeToggle = document.querySelector('.mode-toggle')
+    if (modeMenu && !modeMenu.contains(e.target) && !modeToggle.contains(e.target)) {
+      modeMenu.classList.remove('show')
+    }
+  })
+}
+
 function showUpdateBanner(version) {
   const banner = document.createElement('div')
   banner.className = 'update-banner'
   banner.innerHTML = `
-    <span>🎉 Update v${version} is ready!</span>
+    <span>Update v${version} is ready!</span>
     <button onclick="window.api.restartApp()">Restart Now</button>
     <button onclick="this.parentElement.remove()">Later</button>
   `
   document.body.prepend(banner)
+}
+
+function toggleModeMenu() {
+  const menu = document.getElementById('mode-menu')
+  menu.classList.toggle('show')
+}
+
+function selectMode(mode) {
+  currentMode = mode
+  
+  document.querySelectorAll('.mode-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.mode === mode)
+  })
+  
+  document.getElementById('current-mode-label').textContent = modeLabels[mode]
+  document.getElementById('mode-menu').classList.remove('show')
+}
+
+function toggleQuickActions() {
+  const panel = document.getElementById('quick-actions-panel')
+  const isVisible = panel.style.display !== 'none'
+  panel.style.display = isVisible ? 'none' : 'block'
+  document.getElementById('mode-menu').classList.remove('show')
+}
+
+async function loadQuickActions() {
+  try {
+    quickActionsData = await window.api.fetchQuickActions()
+    renderQuickActions()
+  } catch (err) {
+    console.error('Failed to load quick actions:', err)
+  }
+}
+
+function renderQuickActions() {
+  const grid = document.getElementById('quick-actions-grid')
+  
+  const categories = {
+    backend: { label: 'Backend', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>', items: [] },
+    frontend: { label: 'Frontend', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>', items: [] },
+    feature: { label: 'Features', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>', items: [] },
+    database: { label: 'Database', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>', items: [] },
+    security: { label: 'Security', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>', items: [] },
+    devops: { label: 'DevOps', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33"></path></svg>', items: [] },
+    info: { label: 'Hackathon Info', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>', items: [] }
+  }
+  
+  quickActionsData.forEach(action => {
+    if (categories[action.category]) {
+      categories[action.category].items.push(action)
+    }
+  })
+  
+  let html = ''
+  for (const [key, cat] of Object.entries(categories)) {
+    if (cat.items.length > 0) {
+      html += `<div class="qa-category"><span class="qa-label">${cat.icon} ${cat.label}</span></div>`
+      html += cat.items.map(a => `
+        <button class="qa-btn" onclick="executeQuickAction('${a.id}', '${a.type || 'snippet'}')">
+          <span class="qa-icon">${a.icon}</span>
+          <span class="qa-text">${a.label}</span>
+        </button>
+      `).join('')
+    }
+  }
+  
+  grid.innerHTML = html
+}
+
+async function executeQuickAction(id, type) {
+  toggleQuickActions()
+  
+  if (type === 'resource') {
+    const result = await window.api.sendMessage(`Show me the ${id}`, 'auto')
+    appendMessage('ai', result.reply, result.source)
+  } else {
+    const snippet = await window.api.fetchSnippet(id)
+    if (snippet && snippet.code) {
+      const text = `**${snippet.name}**\n\nTags: ${snippet.tags.join(', ')}\n\n\`\`\`\n${snippet.code}\n\`\`\``
+      appendMessage('ai', text, 'snippet')
+    }
+  }
 }
 
 async function send() {
@@ -46,13 +191,15 @@ async function send() {
   const message = input.value.trim()
   if (!message) return
 
-  append('user', message)
+  appendMessage('user', message)
   input.value = ''
 
-  const typing = append('ai', 'Typing...')
+  const typing = appendMessage('ai', '<span class="loading"></span> Thinking...', 'loading')
 
-  const reply = await window.api.sendMessage(message)
-  typing.innerHTML = formatMessage(reply)
+  const result = await window.api.sendMessage(message, currentMode)
+  
+  typing.remove()
+  appendMessage('ai', result.reply, result.source)
 }
 
 function handleKeyPress(event) {
@@ -67,11 +214,20 @@ function formatMessage(text) {
     .replace(/\n/g, '<br>')
 }
 
-function append(type, text) {
+function appendMessage(type, text, source = null) {
   const chatBox = document.getElementById('chat-box')
   const msg = document.createElement('div')
   msg.classList.add('message', type)
-  msg.innerHTML = formatMessage(text)
+  
+  let html = formatMessage(text)
+  
+  if (type === 'ai' && source && source !== 'loading') {
+    const label = sourceLabels[source] || source
+    const icon = sourceIcons[source] || ''
+    html = `<div class="message-badge">${icon} ${label}</div>${html}`
+  }
+  
+  msg.innerHTML = html
   chatBox.appendChild(msg)
   chatBox.scrollTop = chatBox.scrollHeight
   return msg
@@ -94,18 +250,30 @@ async function loadSnippets() {
     renderSnippets(snippetsData)
   } catch (err) {
     document.getElementById('snippets-list').innerHTML =
-      "<p class='error'>Failed to load snippets. Is the backend running?</p>"
+      "<div class='empty-state'><span class='empty-state-icon'><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><path d='M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z'></path><polyline points='14 2 14 8 20 8'></polyline></svg></span><span class='empty-state-text'>Failed to load snippets. Is the backend running?</span></div>"
   }
 }
 
 function renderSnippets(snippets) {
   const container = document.getElementById('snippets-list')
+  
+  if (snippets.length === 0) {
+    container.innerHTML = "<div class='empty-state'><span class='empty-state-icon'><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><circle cx='11' cy='11' r='8'></circle><line x1='21' y1='21' x2='16.65' y2='16.65'></line></svg></span><span class='empty-state-text'>No snippets match your search</span></div>"
+    return
+  }
+  
   container.innerHTML = snippets.map(s => `
     <div class="card snippet-card" onclick="copySnippet('${s.id}')">
       <h3>${s.name}</h3>
       <div class="tags">${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
       <pre><code>${escapeHtml(s.code.substring(0, 150))}${s.code.length > 150 ? '...' : ''}</code></pre>
-      <button class="copy-btn">📋 Copy Code</button>
+      <button class="copy-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        Copy Code
+      </button>
     </div>
   `).join('')
 }
@@ -133,13 +301,14 @@ async function loadResources() {
     showResourceTab('rules')
   } catch (err) {
     document.getElementById('resources-content').innerHTML =
-      "<p class='error'>Failed to load resources. Is the backend running?</p>"
+      "<div class='empty-state'><span class='empty-state-icon'><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'></path><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'></path></svg></span><span class='empty-state-text'>Failed to load resources. Is the backend running?</span></div>"
   }
 }
 
 function showResourceTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.toLowerCase() === tab)
+    const btnText = btn.textContent.toLowerCase().trim()
+    btn.classList.toggle('active', btnText.includes(tab))
   })
 
   const content = document.getElementById('resources-content')
@@ -147,14 +316,28 @@ function showResourceTab(tab) {
   if (tab === 'rules') {
     content.innerHTML = `
       <div class="resource-card">
-        <h3>📜 Hackathon Rules</h3>
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          Hackathon Rules
+        </h3>
         <ul>${resourcesData.rules?.map(r => `<li>${r}</li>`).join('') || ''}</ul>
       </div>
     `
   } else if (tab === 'timeline') {
     content.innerHTML = `
       <div class="resource-card">
-        <h3>⏰ Timeline</h3>
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Timeline
+        </h3>
         <div class="timeline">
           ${resourcesData.timeline?.map(t => `
             <div class="timeline-item">
@@ -169,13 +352,27 @@ function showResourceTab(tab) {
     const apis = resourcesData.apis || {}
     content.innerHTML = `
       <div class="resource-card">
-        <h3>🔌 Available APIs</h3>
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          Available APIs
+        </h3>
         <div class="api-grid">
           ${Object.entries(apis).map(([key, api]) => `
             <div class="api-card">
               <h4>${api.name}</h4>
               <p>${api.description}</p>
-              <a href="${api.docs}" target="_blank">📖 Documentation</a>
+              <a href="${api.docs}" target="_blank">
+                View Documentation
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
             </div>
           `).join('')}
         </div>
@@ -184,7 +381,12 @@ function showResourceTab(tab) {
   } else if (tab === 'judging') {
     content.innerHTML = `
       <div class="resource-card">
-        <h3>⚖️ Judging Criteria</h3>
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          Judging Criteria
+        </h3>
         <div class="criteria-list">
           ${resourcesData.judging_criteria?.map(c => `
             <div class="criteria-item">
@@ -201,7 +403,13 @@ function showResourceTab(tab) {
   } else if (tab === 'prizes') {
     content.innerHTML = `
       <div class="resource-card">
-        <h3>🏆 Prizes</h3>
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+          Prizes
+        </h3>
         <div class="prize-list">
           ${resourcesData.prizes?.map(p => `
             <div class="prize-item">
@@ -221,16 +429,26 @@ async function loadFaqs() {
     renderFaqs(faqsData)
   } catch (err) {
     document.getElementById('faq-list').innerHTML =
-      "<p class='error'>Failed to load FAQs. Is the backend running?</p>"
+      "<div class='empty-state'><span class='empty-state-icon'><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><circle cx='12' cy='12' r='10'></circle><path d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'></path><line x1='12' y1='17' x2='12.01' y2='17'></line></svg></span><span class='empty-state-text'>Failed to load FAQs. Is the backend running?</span></div>"
   }
 }
 
 function renderFaqs(faqs) {
   const container = document.getElementById('faq-list')
+  
+  if (faqs.length === 0) {
+    container.innerHTML = "<div class='empty-state'><span class='empty-state-icon'><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><circle cx='11' cy='11' r='8'></circle><line x1='21' y1='21' x2='16.65' y2='16.65'></line></svg></span><span class='empty-state-text'>No FAQs match your search</span></div>"
+    return
+  }
+  
   container.innerHTML = faqs.map(f => `
     <div class="faq-card" onclick="toggleFaq(this)">
       <div class="faq-question">
-        <span class="faq-icon">▶</span>
+        <span class="faq-icon">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </span>
         <h3>${f.problem}</h3>
       </div>
       <div class="faq-answer">
@@ -263,13 +481,24 @@ function escapeHtml(text) {
 }
 
 function showToast(message) {
-  const toast = document.createElement('div')
-  toast.className = 'toast'
-  toast.textContent = message
-  document.body.appendChild(toast)
-  setTimeout(() => toast.classList.add('show'), 10)
+  const toast = document.getElementById('toast') || createToast()
+  toast.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+    ${message}
+  `
+  toast.classList.add('show')
   setTimeout(() => {
     toast.classList.remove('show')
-    setTimeout(() => toast.remove(), 300)
-  }, 2000)
+  }, 2500)
+}
+
+function createToast() {
+  const toast = document.createElement('div')
+  toast.id = 'toast'
+  toast.className = 'toast'
+  document.body.appendChild(toast)
+  return toast
 }
