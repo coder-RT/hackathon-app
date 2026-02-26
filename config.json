@@ -1,0 +1,19 @@
+{
+  "window": {
+    "width": 1400,
+    "height": 900,
+    "minWidth": 900,
+    "minHeight": 700
+  },
+  "api": {
+    "url": "http://localhost:3000"
+  },
+  "updates": {
+    "autoUpdate": false
+  },
+  "hackathon": {
+    "name": "Hackathon",
+    "theme": "AI for Good",
+    "duration": "48 Hours"
+  }
+}

@@ -48,6 +48,13 @@ async function initApp() {
   try {
     appConfig = await window.api.getConfig()
     console.log('App initialized:', appConfig)
+    
+    if (appConfig.hackathon) {
+      const { name, theme, duration } = appConfig.hackathon
+      if (name) document.getElementById('hackathon-name').textContent = name
+      if (theme) document.getElementById('hackathon-theme').textContent = theme
+      if (duration) document.getElementById('hackathon-duration').textContent = duration
+    }
   } catch (err) {
     console.error('Failed to initialize app config:', err)
   }

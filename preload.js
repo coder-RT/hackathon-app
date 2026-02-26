@@ -9,7 +9,16 @@ async function initConfig() {
     return config
   } catch (err) {
     console.error('Failed to get config:', err)
-    return { apiUrl, version: '1.0.0', isDev: true }
+    return { 
+      apiUrl, 
+      version: '1.0.0', 
+      isDev: true,
+      hackathon: {
+        name: 'Hackathon',
+        theme: 'AI for Good',
+        duration: '48 Hours'
+      }
+    }
   }
 }
 
@@ -83,5 +92,11 @@ contextBridge.exposeInMainWorld('api', {
 
   restartApp: () => {
     ipcRenderer.invoke('restart-app')
-  }
+  },
+
+  getPreferences: () => ipcRenderer.invoke('get-preferences'),
+  
+  setPreference: (key, value) => ipcRenderer.invoke('set-preference', key, value),
+  
+  resetPreferences: () => ipcRenderer.invoke('reset-preferences')
 })
